@@ -1,0 +1,41 @@
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG PHẦN MỀM GIÁM SÁT HUYẾT ÁP
+GỒM CÁC BƯỚC SAU ĐÂY:
+
+1. Đăng nhập
+- Người dùng truy cập vào trang web và bấm nút "Đăng nhập".
+- Nhập email và mật khẩu đã đăng ký để vào hệ thống.
+
+2. Chọn loại máy đo huyết áp
+- Nếu máy đo có Bluetooth: chọn chế độ "Bluetooth".
+- Nếu máy đo không có Bluetooth: chọn chế độ "Manual" (nhập tay).
+
+3. Kết nối máy đo huyết áp (Bluetooth)
+- Ứng dụng sẽ quét các thiết bị Bluetooth xung quanh.
+- Chọn đúng tên máy đo huyết áp.
+- Hệ thống sẽ lưu địa chỉ IP và thông tin kết nối để sử dụng cho các lần sau.
+
+4. Hướng dẫn đo
+- Người dùng nhấn nút "Bắt đầu đo".
+- Hệ thống hiển thị video/tutor hướng dẫn lần đầu:
+  + Đeo vòng cuff cách khuỷu tay 1–2 inch, phía trên đường trắng trên bắp tay.
+  + Ngồi thẳng lưng, đặt tay lên bàn ngang tim.
+  + Giữ yên lặng, không nói chuyện khi đo.
+  + Môi phải khép lại, không há miệng.
+- Camera từ Raspberry Pi bật và hiển thị hình ảnh trực tiếp lên web để kiểm tra tư thế.
+- Nếu tư thế sai, hệ thống đưa ra cảnh báo trên màn hình và qua loa (voice alert).
+
+5. Tiến hành đo
+- Máy có Bluetooth: Raspberry Pi tự động nhận số đo gửi về.
+- Máy không có Bluetooth: bệnh nhân tự nhập kết quả đo vào form trên web.
+
+6. Xác nhận kết quả
+- Hệ thống hiển thị màn hình xác nhận kết quả.
+- Người dùng có thể chỉnh sửa thủ công nếu giá trị hiển thị không chính xác.
+
+7. Lưu kết quả
+- Sau khi xác nhận, kết quả huyết áp được lưu vào cơ sở dữ liệu.
+- Người dùng có thể xem lại lịch sử đo trong phần "Kết quả đo".
+
+8. Kết thúc
+- Người dùng có thể bấm nút "Hoàn tất" để kết thúc phiên đo.
+- Hệ thống trả về thông báo: "Đã lưu kết quả đo thành công".

@@ -1,0 +1,13 @@
+@echo off
+echo 🔄 Restarting Blood Pressure Chatbot with improved language handling...
+echo.
+
+REM Kill existing processes on port 8000
+echo 🛑 Stopping existing server...
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":8000" ^| find "LISTENING"') do taskkill /f /pid %%a > nul 2>&1
+
+echo ⏳ Waiting for port to be free...
+timeout /t 3 /nobreak > nul
+
+echo 🚀 Starting improved chatbot...
+python run_chatbot.py

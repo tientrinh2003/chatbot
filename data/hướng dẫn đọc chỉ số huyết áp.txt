@@ -1,0 +1,105 @@
+1. Bạn đã biết gì về chỉ số huyết áp? 
+Thành động mạch sẽ chịu một áp lực do máu tác động lên, áp lực này giúp máu được bơm đi xa nuôi dưỡng các cơ quan trong cơ thể. Đây còn được gọi là huyết áp và được xác định dựa trên lưu lượng máu chảy vào tim. Trong trường hợp tim tiếp nhận quá nhiều máu thì sẽ làm thu hẹp động mạch dẫn tới tình trạng huyết áp cao.
+
+Chỉ số huyết áp được phân thành 2 loại:
+
+Huyết áp tâm thu: chính là huyết áp tối đa, một dạng áp lực xuất hiện khi máu được bơm ra khỏi tim và động mạch;
+
+Huyết áp tâm trương: là huyết áp tối thiểu, đo được khi tim nghỉ giữa các nhịp đập, giá trị của chỉ số này sẽ thấp hơn huyết áp tâm thu.
+
+Mô phỏng huyết áp tâm trương và huyết áp tâm thu
+
+Mô phỏng huyết áp tâm trương và huyết áp tâm thu
+
+Trên máy đo huyết áp sẽ hiển thị cả 2 chỉ số này, đơn vị đo là milimet thủy ngân (mmHg). Bệnh nhân cần nắm rõ 2 chỉ số này để có thể tiến hành đo huyết áp tại nhà hàng ngày.
+
+Theo định nghĩa của Bộ Y tế, huyết áp bình thường ở một người sẽ dao động trong khoảng 90/60 mmHg - 130/90 mmHg. Để kết luận rằng huyết áp của một người có đang trong ngưỡng bình thường hay không thì không chỉ dựa trên khoảng tham số này mà còn cần dựa trên trạng thái hoạt động trong ngày của người đó. Bởi nhiều khi huyết áp sẽ tăng hoặc giảm khi vận động, tập thể dục, do thay đổi tâm lý,...
+
+2. Cách đo huyết áp 
+2.1. Dụng cụ cần thiết cho việc đo huyết áp
+Trước khi đo huyết áp người bệnh cần chuẩn bị những loại dụng cụ sau:
+
+Vòng băng hơi (vòng bít): nên sử dụng loại có kích thước phù hợp với bắp tay của bệnh nhân;
+
+Ống nghe mạch đập: có tác dụng theo dõi mạch đập của người bệnh trong quá trình đo;
+
+Máy đo huyết áp (hay huyết áp kế): có nhiều loại máy đo như máy đo huyết áp thủy ngân, máy đo huyết áp cơ, máy đo điện tử,... 
+
+Hiện nay để bệnh nhân tiện theo dõi chỉ số huyết áp tại nhà, nhiều nhà cung cấp thiết bị y tế đã thiết kế ra loại máy đo điện tử có nguyên lý sử dụng dễ dàng hơn so với loại máy cơ và máy đo thủy ngân (2 loại này phải có chuyên môn mới dùng được). Nhờ vậy mà người bệnh chỉ cần học cách đọc chỉ số huyết áp trên máy là đã có thể tự kiểm tra, theo dõi tình trạng huyết áp ngay tại nhà, giúp tiết kiệm chi phí, thời gian thăm khám, đi lại cũng như dự phòng được nguy cơ bệnh lý nếu chỉ số huyết áp ở mức bất thường.
+
+2.2. Nguyên lý đo huyết áp 
+Khi thực hiện đo huyết áp, người bệnh cần bơm căng túi hơi đã được quấn chặt vào bắp tay. Điều này sẽ làm mất tạm thời mạch đập của động mạch, sau đó hãy từ từ xả hơi ra khỏi túi khí và quan sát các chỉ số huyết áp. Trong đó:
+
+Huyết áp tâm thu: được ghi nhận vào thời điểm máu lưu thông khi giảm dần sức ép trong túi hơi;
+
+Huyết áp tâm trương: ghi nhận vào thời điểm máu được lưu thông tự do khi túi hơi đã không còn sức ép.
+
+2.3. Hướng dẫn các bước đo huyết áp
+Bất kể là bệnh nhân thực hiện đo huyết áp tại nhà, cơ sở y tế hay tại viện thì cũng cần phải tuân thủ theo quy trình như sau:
+
+Trước khi đo:
+
+Thả lỏng, nghỉ ngơi khoảng 15 phút, đặc biệt không được dùng các chất kích thích như trà, rượu bia, cà phê, thuốc lá,...
+
+Trong khi đo:
+
+Tư thế thực hiện: Ngồi tựa lưng trên ghế, duỗi thẳng cánh tay trên mặt bàn và phần khuỷu tay đặt ngang với tim. Cũng có những trường hợp cần phải đứng để đo huyết áp, ví dụ như người cao tuổi hoặc bệnh nhân tiểu đường để kiểm tra xem có gặp phải hiện tượng hạ huyết áp tư thế hay không;
+
+Thực hiện đo: quấn vòng bít với một lực đủ chặt, áp lực kế trên mặt đồng hồ phải ở mức 0. Bắt đầu bơm khí vào vòng bít liên tục không được dừng lại giữa chừng. Sau đó từ từ xả hơi khỏi vòng bít (tốc độ từ 2 - 3 mmHg/nhịp cho đến khi kim chạm xuống vạch 0. Lần đầu tiên nên thực hiện ở cả 2 cánh tay, nếu chỉ số ở một bên tay ghi nhận cao hơn tay còn lại thì sẽ lấy đó làm mốc để so sánh cho các lần đo sau này.
+
+Giải thích các ký hiệu trên máy đo huyết áp
+
+Giải thích các ký hiệu trên máy đo huyết áp
+
+3. Hướng dẫn cách đọc chỉ số huyết áp
+Nhìn chung thì chỉ số huyết áp hiển thị trên các loại máy đo tự động đều tương tự như nhau. Ý nghĩa của các chỉ số sẽ là:
+
+Chỉ số huyết áp tâm thu: ký hiệu bằng  SYS (mmHg);
+
+Chỉ số huyết áp tâm trương: ký hiệu bằng  DIA (mmHg);
+
+Nhịp tim/phút: ký hiệu bằng Pulse/min.
+
+Cách đọc chỉ số như sau:
+
+Chỉ số huyết áp bình thường:
+Huyết áp tâm thu: 90 - 130 mmHg;
+
+Huyết áp tâm trương: 60 - 90 mmHg.
+
+Chỉ số huyết áp thấp:
+Huyết áp tâm thu: < 85 mmHg và/hoặc:
+
+Huyết áp tâm trương: < 60 mmHg.
+
+Khi xảy ra tình trạng huyết áp thấp, các mô và cơ quan trong cơ thể (nhất là não) sẽ không được nhận đủ lượng máu cần thiết để duy trì hoạt động, dẫn đến các triệu chứng như hoa mắt, chóng mặt, đau đầu, buồn nôn,...
+
+Chỉ số huyết áp cao:
+Hiện tượng này gặp nhiều ở bệnh nhân lớn tuổi. Dựa trên quy chuẩn do Tổ chức Y tế thế giới (WHO) đưa ra thì huyết áp cao được phân theo các cấp độ như:
+
+Tình trạng huyết áp cao rất thường gặp ở những người lớn tuổi. Theo tiêu chuẩn của WHO (Tổ chức Y tế Thế giới), có các cấp độ tăng huyết áp như sau:
+
+Tiền tăng huyết áp: Huyết áp tối đa 130 - 139 mmHg và/hoặc huyết áp tối thiểu 85 – 89 mmHg;
+
+Tăng huyết áp mức 1: Huyết áp tối đa 140 – 159 mmHg và/hoặc huyết áp tối thiểu 90 – 99 mmHg; 
+
+Tăng huyết áp mức 2: Huyết áp tối đa 160 – 179 mmHg và/hoặc huyết áp tối thiểu 100 – 109 mmHg;
+
+Tăng huyết áp mức 3: Huyết áp tối đa ≥ 180 mmHg và/hoặc huyết áp tối thiểu ≥ 110 mmHg;
+
+Tăng huyết áp tâm thu đơn độc: Huyết áp tâm thu ≥ 140 mmHg và huyết áp tâm trương < 90 mmHg.
+
+4. Khi đo huyết áp tại nhà cần lưu ý những gì?
+Để đảm bảo việc đo huyết áp cho kết quả chuẩn xác, bệnh nhân cần thực hiện các biện pháp sau:
+
+Chuẩn bị đầy đủ và kiểm tra dụng cụ đo;
+
+Nghỉ ngơi thư giãn trước khi tiến hành đo huyết áp, tuyệt đối không dùng chất kích thích như đã nêu;
+
+Nên thực hiện đo huyết áp hàng ngày, mỗi ngày 2 lần. Lần 1 trước khi uống thuốc vào buổi sáng, lần 2 là sau ăn tối 1 tiếng. Sau khi đo hãy ghi các chỉ số theo dõi vào nhật ký, kèm theo cả ngày giờ đo;
+
+Không được nói chuyện, cử động, cười đùa hay di chuyển trong quá trình đo;
+
+Nếu chỉ số giữa các lần đo có sự chênh lệch quá lớn, hãy nghỉ ngơi khoảng 5 - 10 phút rồi tiến hành đo lại;
+
+Nếu phát hiện ra bất kỳ bất thường nào sau khi đo huyết áp, hãy thông báo ngay cho bác sĩ chuyên khoa để được xử trí, can thiệp kịp thời.
