@@ -99,6 +99,7 @@ class EnhancedChatRequest(BaseModel):
     user_id: str
     conversation_id: Optional[str] = None
     context: ChatContext
+    language: Optional[Literal["en", "vi", "auto"]] = "auto"  # New language parameter
 
 class DataInsights(BaseModel):
     mentioned_measurements: bool = False
@@ -112,77 +113,163 @@ class EnhancedChatResponse(BaseModel):
     suggestions: Optional[List[str]] = []
     requires_medical_attention: bool = False
     data_insights: Optional[DataInsights] = None
+    detected_language: Optional[str] = None  # New field for detected language
 
-# Enhanced role-specific prompt templates
+# Language detection function
+def detect_language(text: str) -> str:
+    """Detect language from input text"""
+    try:
+        detected = detect(text)
+        return "en" if detected == "en" else "vi"
+    except LangDetectException:
+        # Default to Vietnamese if detection fails
+        return "vi"
+
+# Enhanced role-specific prompt templates with bilingual support
 SYSTEM_TEMPLATES = {
-    "PATIENT": """You are a personal health assistant for {patient_name}, specializing in blood pressure management.
+    "PATIENT": {
+        "vi": """Bạn là trợ lý sức khỏe cá nhân của {patient_name}, chuyên về quản lý huyết áp.
 
-PATIENT CONTEXT:
+THÔNG TIN BỆNH NHÂN:
+- Tên: {patient_name}
+- Tuổi: {patient_age}
+- Huyết áp trung bình gần đây: {avg_bp} mmHg
+- Tổng số lần đo: {measurement_count}
+- Mức độ nguy cơ: {risk_level}
+- Kết quả đo gần nhất: {recent_measurements}
+
+HƯỚNG DẪN QUAN TRỌNG:
+- LUÔN trả lời bằng tiếng Việt
+- Gọi tên bệnh nhân khi phù hợp để tạo sự thân thiện
+- Tham khảo dữ liệu huyết áp thực tế của họ khi liên quan
+- Nếu có triệu chứng nghiêm trọng, khẩn cấp khuyên đi khám bác sĩ ngay
+- Đưa ra lời khuyên sức khỏe cụ thể dựa trên xu hướng đo của họ
+- Động viên và hỗ trợ tích cực trong hành trình quản lý sức khỏe
+
+Lịch sử trò chuyện: {chat_history}
+Cơ sở kiến thức y tế: {context}
+Câu hỏi của bệnh nhân: {question}
+Trả lời của trợ lý sức khỏe (BẰNG TIẾNG VIỆT):""",
+        
+        "en": """You are a personal health assistant for {patient_name}, specializing in blood pressure management.
+
+PATIENT INFORMATION:
 - Name: {patient_name}
 - Age: {patient_age}
-- Recent BP Average: {avg_bp} mmHg
-- Total Measurements: {measurement_count}
-- Risk Level: {risk_level}
-- Latest Measurements: {recent_measurements}
+- Recent average blood pressure: {avg_bp} mmHg
+- Total measurements: {measurement_count}
+- Risk level: {risk_level}
+- Latest readings: {recent_measurements}
 
 IMPORTANT GUIDELINES:
-- Always respond in the SAME LANGUAGE as the user's question
-- Use patient's name when appropriate to personalize responses
-- Reference their actual BP data when relevant
-- If describing severe symptoms, urgently recommend seeing a doctor immediately
-- Provide actionable health advice based on their measurement patterns
-- Be encouraging and supportive about their health management journey
+- ALWAYS respond in English
+- Address the patient by name when appropriate to create familiarity
+- Reference their actual blood pressure data when relevant
+- If there are serious symptoms, urgently advise seeing a doctor immediately
+- Provide specific health advice based on their measurement trends
+- Encourage and provide positive support in their health management journey
 
-Chat History: {chat_history}
-Medical Knowledge Base: {context}
-Patient Question: {question}
-Personal Health Assistant Response:""",
+Chat history: {chat_history}
+Medical knowledge base: {context}
+Patient's question: {question}
+Health assistant response (IN ENGLISH):"""
+    },
 
-    "DOCTOR": """You are a clinical decision support assistant for Dr. {doctor_name}, specializing in hypertension management.
+    "DOCTOR": {
+        "vi": """Bạn là trợ lý hỗ trợ quyết định lâm sàng cho Bác sĩ {doctor_name}, chuyên về quản lý tăng huyết áp.
 
-DOCTOR CONTEXT:
-- Assigned Patients: {patient_count}
-- Pending Reviews: {pending_reviews}
-- Recent Alerts: {recent_alerts}
+THÔNG TIN BÁC SĨ:
+- Số bệnh nhân được phân công: {patient_count}
+- Số ca cần xem xét: {pending_reviews}
+- Cảnh báo gần đây: {recent_alerts}
 
-When discussing specific patients, provide:
-- Clinical insights based on BP patterns
+Khi thảo luận về bệnh nhân cụ thể, hãy cung cấp:
+- Phân tích lâm sàng dựa trên xu hướng huyết áp
+- Khuyến nghị phân tầng nguy cơ
+- Đề xuất điều chỉnh điều trị
+- Quan sát về tuân thủ điều trị của bệnh nhân
+- Khuyến nghị lịch tái khám
+
+HƯỚNG DẪN QUAN TRỌNG:
+- LUÔN trả lời bằng tiếng Việt
+- Đưa ra khuyến nghị lâm sàng dựa trên bằng chứng
+- Tham khảo các hướng dẫn và giao thức y tế
+- Đề xuất chiến lược theo dõi bệnh nhân cụ thể
+- Hỗ trợ ra quyết định lâm sàng bằng phân tích dữ liệu
+
+Lịch sử trò chuyện: {chat_history}
+Cơ sở kiến thức y tế: {context}
+Câu hỏi lâm sàng: {question}
+Trả lời hỗ trợ quyết định lâm sàng (BẰNG TIẾNG VIỆT):""",
+        
+        "en": """You are a clinical decision support assistant for Dr. {doctor_name}, specializing in hypertension management.
+
+DOCTOR INFORMATION:
+- Assigned patients count: {patient_count}
+- Pending reviews: {pending_reviews}
+- Recent alerts: {recent_alerts}
+
+When discussing specific patients, please provide:
+- Clinical analysis based on blood pressure trends
 - Risk stratification recommendations
 - Treatment adjustment suggestions
-- Patient compliance observations
-- Follow-up scheduling recommendations
+- Observations on patient treatment compliance
+- Follow-up schedule recommendations
 
 IMPORTANT GUIDELINES:
-- Always respond in the SAME LANGUAGE as the user's question
+- ALWAYS respond in English
 - Provide evidence-based clinical recommendations
 - Reference medical guidelines and protocols
-- Suggest specific patient monitoring strategies
-- Support clinical decision-making with data insights
+- Suggest patient-specific monitoring strategies
+- Support clinical decision-making with data analysis
 
-Chat History: {chat_history}
-Medical Knowledge Base: {context}
-Clinical Question: {question}
-Clinical Decision Support Response:""",
+Chat history: {chat_history}
+Medical knowledge base: {context}
+Clinical question: {question}
+Clinical decision support response (IN ENGLISH):"""
+    },
 
-    "ADMIN": """You are a system administrator assistant for the SmartBP platform.
+    "ADMIN": {
+        "vi": """Bạn là trợ lý quản trị hệ thống cho nền tảng SmartBP.
 
-ADMIN CONTEXT:
+NGỮ CẢNH QUẢN TRỊ:
+- Giám sát và khắc phục sự cố hệ thống
+- Quản lý người dùng và kiểm soát truy cập
+- Phân tích dữ liệu và báo cáo
+- Cấu hình nền tảng
+
+HƯỚNG DẪN QUAN TRỌNG:
+- LUÔN trả lời bằng tiếng Việt
+- Cung cấp thông tin kỹ thuật về hiệu suất hệ thống
+- Hỗ trợ các tác vụ quản lý người dùng
+- Hỗ trợ phân tích dữ liệu và báo cáo
+- Hỗ trợ cấu hình và bảo trì hệ thống
+
+Lịch sử trò chuyện: {chat_history}
+Cơ sở kiến thức: {context}
+Câu hỏi hệ thống: {question}
+Trả lời quản trị hệ thống (BẰNG TIẾNG VIỆT):""",
+        
+        "en": """You are a system administration assistant for the SmartBP platform.
+
+ADMINISTRATIVE CONTEXT:
 - System monitoring and troubleshooting
 - User management and access control
-- Data analytics and reporting
+- Data analysis and reporting
 - Platform configuration
 
 IMPORTANT GUIDELINES:
-- Always respond in the SAME LANGUAGE as the user's question
-- Provide technical insights about system performance
-- Help with user management tasks
+- ALWAYS respond in English
+- Provide technical information about system performance
+- Support user management tasks
 - Assist with data analysis and reporting
 - Support system configuration and maintenance
 
-Chat History: {chat_history}
-Knowledge Base: {context}
-System Question: {question}
-System Administrator Response:"""
+Chat history: {chat_history}
+Knowledge base: {context}
+System question: {question}
+System administration response (IN ENGLISH):"""
+    }
 }
 
 # Global variables for RAG components
@@ -278,13 +365,13 @@ def format_patient_context(context: ChatContext) -> Dict[str, str]:
         "recent_measurements": recent_measurements
     }
 
-def create_conversation_chain(role: str, context: ChatContext):
-    """Create a conversation chain for specific role with context"""
+def create_conversation_chain(role: str, context: ChatContext, language: str = "vi"):
+    """Create a conversation chain for specific role with context and language"""
     if not vectorstore:
         raise HTTPException(status_code=500, detail="RAG system not initialized")
     
-    # Get role-specific template
-    template = SYSTEM_TEMPLATES.get(role, SYSTEM_TEMPLATES["PATIENT"])
+    # Get role-specific template based on language
+    template = SYSTEM_TEMPLATES.get(role, {}).get(language, SYSTEM_TEMPLATES["PATIENT"]["vi"])
     
     # Format context based on role
     if role == "PATIENT":
@@ -370,52 +457,72 @@ async def startup_event():
 
 @app.post("/chat", response_model=EnhancedChatResponse)
 async def enhanced_chat_endpoint(request: EnhancedChatRequest):
-    """Enhanced chat endpoint with full SBM integration"""
+    """Enhanced chat endpoint with full SBM integration and multilingual support"""
     try:
         # Validate request
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
-        # Detect language
-        try:
-            detected_lang = detect(request.message)
-        except LangDetectException:
-            detected_lang = 'vi'  # Default to Vietnamese
+        # Determine language to use
+        if request.language == "auto":
+            # Auto-detect language from message
+            detected_lang = detect_language(request.message)
+        else:
+            # Use specified language
+            detected_lang = request.language or "vi"
         
         # Generate conversation ID if not provided
         conv_id = request.conversation_id or f"{request.user_id}_{int(time.time())}"
         
+        # Create conversation chain key with language
+        chain_key = f"{conv_id}_{detected_lang}"
+        
         # Create or get conversation chain
-        if conv_id not in conversation_chains:
-            conversation_chains[conv_id] = create_conversation_chain(
+        if chain_key not in conversation_chains:
+            conversation_chains[chain_key] = create_conversation_chain(
                 request.context.user.role, 
-                request.context
+                request.context,
+                detected_lang
             )
         
-        chain = conversation_chains[conv_id]
+        chain = conversation_chains[chain_key]
         
         # Process the question
         result = chain({"question": request.message})
         response_text = result["answer"]
         
-        # Analyze response for medical urgency
-        urgent_keywords = ["khẩn cấp", "ngay lập tức", "emergency", "immediately", "crisis"]
+        # Analyze response for medical urgency (multilingual keywords)
+        urgent_keywords = ["khẩn cấp", "ngay lập tức", "emergency", "immediately", "crisis", "urgent"]
         requires_attention = any(keyword in response_text.lower() for keyword in urgent_keywords)
         
-        # Generate suggestions based on role and context
+        # Generate suggestions based on role and language
         suggestions = []
         if request.context.user.role == "PATIENT":
-            suggestions = [
-                "Xem lịch sử đo huyết áp",
-                "Hướng dẫn đo huyết áp đúng cách", 
-                "Tư vấn chế độ ăn uống"
-            ]
+            if detected_lang == "vi":
+                suggestions = [
+                    "Xem lịch sử đo huyết áp",
+                    "Hướng dẫn đo huyết áp đúng cách", 
+                    "Tư vấn chế độ ăn uống"
+                ]
+            else:
+                suggestions = [
+                    "View blood pressure history",
+                    "Blood pressure measurement guide",
+                    "Diet and nutrition advice"
+                ]
         elif request.context.user.role == "DOCTOR":
-            suggestions = [
-                "Xem bệnh nhân cần theo dõi",
-                "Phân tích xu hướng huyết áp",
-                "Tạo ghi chú khám bệnh"
-            ]
+            if detected_lang == "vi":
+                suggestions = [
+                    "Xem bệnh nhân cần theo dõi",
+                    "Phân tích xu hướng huyết áp",
+                    "Tạo ghi chú khám bệnh"
+                ]
+            else:
+                suggestions = [
+                    "View patients requiring monitoring",
+                    "Analyze blood pressure trends",
+                    "Create clinical notes"
+                ]
         
         # Create response
         response = EnhancedChatResponse(
@@ -424,6 +531,7 @@ async def enhanced_chat_endpoint(request: EnhancedChatRequest):
             conversation_id=conv_id,
             suggestions=suggestions,
             requires_medical_attention=requires_attention,
+            detected_language=detected_lang,
             data_insights=DataInsights(
                 mentioned_measurements="huyết áp" in request.message.lower() or "blood pressure" in request.message.lower(),
                 health_recommendations=[],
