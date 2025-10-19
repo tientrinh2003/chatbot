@@ -19,11 +19,24 @@ from typing import Optional, List, Dict, Any, Literal
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-import ollama
+
+# Try to import Ollama components (optional)
+try:
+    from langchain_ollama import OllamaEmbeddings, ChatOllama
+    import ollama
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
+
+# Try to import OpenAI components as fallback
+try:
+    from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 from langdetect import detect, LangDetectException
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
@@ -51,6 +64,10 @@ DATA_PATH = os.getenv("DATA_DIR", "./data")
 MODEL_NAME = os.getenv("LLM_MODEL", "llama3.1:8b")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 DB_PATH = os.getenv("PERSIST_DIR", "./db")
+
+# Fallback configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+USE_MOCK_RESPONSES = os.getenv("USE_MOCK_RESPONSES", "false").lower() == "true"
 
 # Pydantic Models
 class UserContext(BaseModel):
@@ -281,9 +298,34 @@ def initialize_rag_system():
     global vectorstore
     
     try:
-        # Initialize embeddings
-        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
-        
+        # Try Ollama first
+        if OLLAMA_AVAILABLE:
+            try:
+                # Test Ollama connection
+                ollama_client = ollama.Client()
+                ollama_client.list()  # This will fail if Ollama isn't running
+                embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
+                logging.info("✅ Using Ollama for embeddings")
+            except Exception as e:
+                # Silently fallback to next option
+                raise e
+        else:
+            raise ImportError("Ollama not available")
+            
+    except Exception:
+        # Try OpenAI fallback
+        if OPENAI_AVAILABLE and OPENAI_API_KEY:
+            try:
+                embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+                logging.info("✅ Using OpenAI for embeddings (fallback)")
+            except Exception as e:
+                logging.warning(f"⚠️ OpenAI fallback failed: {e}")
+                return False
+        else:
+            logging.warning("⚠️ No embedding service available - RAG disabled")
+            return False
+    
+    try:
         # Load and process documents
         documents = []
         for filename in os.listdir(DATA_PATH):
@@ -315,6 +357,67 @@ def initialize_rag_system():
     except Exception as e:
         logging.error(f"❌ Failed to initialize RAG system: {e}")
         return False
+
+def generate_mock_response(message: str, role: str, language: str = "vi") -> str:
+    """Generate mock responses when RAG system is not available"""
+    message_lower = message.lower()
+    
+    # Blood pressure related responses
+    bp_keywords = ["huyết áp", "blood pressure", "bp", "đo", "measurement", "mmhg"]
+    diet_keywords = ["ăn", "thức ăn", "diet", "food", "nutrition", "dinh dưỡng"]
+    exercise_keywords = ["tập thể dục", "exercise", "workout", "thể dục", "vận động"]
+    
+    if language == "vi":
+        if any(keyword in message_lower for keyword in bp_keywords):
+            if role == "PATIENT":
+                return "Tôi hiểu bạn quan tâm về huyết áp. Để đo huyết áp chính xác, bạn nên ngồi thẳng, thư giãn 5 phút trước khi đo. Huyết áp bình thường dưới 120/80 mmHg. Bạn có thể sử dụng tính năng đo huyết áp trong ứng dụng SmartBP để theo dõi."
+            elif role == "DOCTOR":
+                return "Về quản lý huyết áp bệnh nhân, tôi khuyến nghị theo dõi thường xuyên và phân tích xu hướng. Bạn có thể xem dữ liệu đo từ hệ thống SmartBP để đánh giá tình trạng bệnh nhân."
+        elif any(keyword in message_lower for keyword in diet_keywords):
+            return "Chế độ ăn DASH (Dietary Approaches to Stop Hypertension) được khuyến nghị cho người có huyết áp cao: Tăng rau củ, hoa quả, giảm muối, hạn chế thức ăn chế biến sẵn."
+        elif any(keyword in message_lower for keyword in exercise_keywords):
+            return "Tập thể dục đều đặn giúp giảm huyết áp hiệu quả. Nên tập ít nhất 30 phút/ngày, 5 ngày/tuần. Các bài tập tim mạch nhẹ như đi bộ nhanh, bơi lội rất tốt."
+        else:
+            return "Xin chào! Tôi là trợ lý AI của SmartBP. Hiện tại hệ thống đang trong chế độ cơ bản. Bạn có thể hỏi về huyết áp, chế độ ăn uống, hoặc tập thể dục. Tôi sẽ cố gắng hỗ trợ bạn tốt nhất có thể."
+    else:  # English
+        if any(keyword in message_lower for keyword in bp_keywords):
+            if role == "PATIENT":
+                return "I understand you're asking about blood pressure. For accurate measurement, sit upright and relax for 5 minutes before measuring. Normal blood pressure is below 120/80 mmHg. You can use the SmartBP app's measurement feature to track your readings."
+            elif role == "DOCTOR":
+                return "For patient blood pressure management, I recommend regular monitoring and trend analysis. You can review measurement data from the SmartBP system to assess patient status."
+        elif any(keyword in message_lower for keyword in diet_keywords):
+            return "The DASH diet (Dietary Approaches to Stop Hypertension) is recommended for high blood pressure: Increase vegetables, fruits, reduce salt, limit processed foods."
+        elif any(keyword in message_lower for keyword in exercise_keywords):
+            return "Regular exercise effectively helps reduce blood pressure. Aim for at least 30 minutes/day, 5 days/week. Light cardiovascular exercises like brisk walking and swimming are excellent."
+        else:
+            return "Hello! I'm the SmartBP AI assistant. The system is currently in basic mode. You can ask about blood pressure, diet, or exercise. I'll do my best to help you."
+
+def initialize_llm():
+    """Initialize LLM with fallback options"""
+    try:
+        # Try Ollama first
+        if OLLAMA_AVAILABLE:
+            try:
+                ollama_client = ollama.Client()
+                ollama_client.list()  # Test connection
+                return ChatOllama(model=MODEL_NAME, temperature=0.7)
+            except Exception:
+                # Silently fallback to next option
+                pass        # Try OpenAI fallback
+        if OPENAI_AVAILABLE and OPENAI_API_KEY:
+            return ChatOpenAI(
+                model="gpt-3.5-turbo",
+                temperature=0.7,
+                openai_api_key=OPENAI_API_KEY
+            )
+        
+        # If all else fails, return None (will trigger mock responses)
+        logging.warning("⚠️ No LLM available - using mock responses")
+        return None
+        
+    except Exception as e:
+        logging.error(f"❌ LLM initialization failed: {e}")
+        return None
 
 def analyze_bp_risk(measurements: List[MeasurementData]) -> str:
     """Analyze blood pressure risk based on recent measurements"""
@@ -422,8 +525,13 @@ def create_conversation_chain(role: str, context: ChatContext, language: str = "
         input_variables=["chat_history", "context", "question"]
     )
     
-    # Initialize LLM
-    llm = ChatOllama(model=MODEL_NAME, temperature=0.7)
+    # Initialize LLM with fallbacks
+    llm = initialize_llm()
+    
+    # Return None if no LLM is available (will trigger mock responses)
+    if llm is None or vectorstore is None:
+        logging.warning("⚠️ No LLM or vectorstore available - conversation chain disabled")
+        return None
     
     # Create conversation chain
     memory = ConversationBufferMemory(
@@ -488,8 +596,16 @@ async def enhanced_chat_endpoint(request: EnhancedChatRequest):
         chain = conversation_chains[chain_key]
         
         # Process the question
-        result = chain({"question": request.message})
-        response_text = result["answer"]
+        if chain is None or vectorstore is None:
+            # Use mock response when RAG system is not available
+            response_text = generate_mock_response(request.message, request.context.user.role, detected_lang)
+        else:
+            try:
+                result = chain({"question": request.message})
+                response_text = result["answer"]
+            except Exception as e:
+                logging.error(f"❌ Chain execution failed: {e}")
+                response_text = generate_mock_response(request.message, request.context.user.role, detected_lang)
         
         # Analyze response for medical urgency (multilingual keywords)
         urgent_keywords = ["khẩn cấp", "ngay lập tức", "emergency", "immediately", "crisis", "urgent"]
@@ -552,5 +668,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 5000))  # Use PORT from .env or default to 5000
+    port = int(os.getenv("PORT", 5001))  # Use PORT from .env or default to 5001 to avoid conflicts
     uvicorn.run(app, host="0.0.0.0", port=port)
