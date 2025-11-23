@@ -6,6 +6,9 @@ __pycache__/
 .Python
 env/
 .env
+.env.local
+.env.development
+.env.production
 .venv/
 venv/
 ENV/
@@ -16,12 +19,50 @@ venv.bak/
 .idea/
 *.iml
 
-# ChromaDB
+# ChromaDB and vector databases
 db/
 *.sqlite3
+*.db
+*.chroma
+chroma_data/
+vector_store/
 
-# Logs
+# AI Models and embeddings (large files)
+models/
+*.bin
+*.onnx
+*.tflite
+*.pb
+*.safetensors
+checkpoint/
+fine_tuned_models/
+embeddings_cache/
+
+# Data files
+data/embeddings/
+data/processed/
+data/temp/
+data/cache/
+*.pkl
+*.pickle
+
+# Logs and monitoring
 *.log
+logs/
+monitoring/
+
+# FastAPI/Uvicorn
+.uvicorn/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
 
 # OS
 .DS_Store
@@ -30,3 +71,14 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+*.bak
+*.backup
+
+# API keys and secrets
+secrets.json
+config/secrets.yaml
+
+# Large document files (PDFs, etc.)
+data/*.pdf
+data/documents/
+uploads/

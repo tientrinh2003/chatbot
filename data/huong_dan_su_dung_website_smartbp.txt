@@ -1,0 +1,558 @@
+# HƯỚNG DẪN SỬ DỤNG ĐẦY ĐỦ WEBSITE SMARTBP
+## Smart Blood Pressure Monitoring System - Comprehensive User Guide
+
+---
+
+## TỔNG QUAN HỆ THỐNG SMARTBP
+
+SmartBP là hệ thống giám sát huyết áp thông minh với 3 loại tài khoản chính:
+- **Admin**: Quản trị toàn hệ thống
+- **Doctor (Bác sĩ)**: Theo dõi và quản lý bệnh nhân
+- **Patient (Bệnh nhân)**: Đo huyết áp và theo dõi sức khỏe
+
+Website: **http://localhost:3000** (local) hoặc domain chính thức
+
+---
+
+## 1. ĐĂNG NHẬP VÀ TÀI KHOẢN
+
+### Cách đăng nhập:
+1. Truy cập website SmartBP
+2. Click nút **"Đăng nhập"** ở góc phải màn hình
+3. Nhập **email** và **mật khẩu**
+4. Click **"Đăng nhập"**
+
+### Tài khoản demo có sẵn:
+- **Admin**: admin@smartbp.local / 123456
+- **Bác sĩ**: doctor@smartbp.local / 123456  
+- **Bệnh nhân**: patient@smartbp.local / 123456
+
+### Đăng ký tài khoản mới:
+1. Từ trang đăng nhập, click **"Đăng ký"**
+2. Điền đầy đủ thông tin:
+   - Họ tên
+   - Email
+   - Mật khẩu (tối thiểu 6 ký tự)
+   - Xác nhận mật khẩu
+   - Chọn vai trò: Patient/Doctor
+3. Click **"Đăng ký"**
+4. Hệ thống sẽ tự động đăng nhập
+
+---
+
+## 2. GIAO DIỆN CHÍNH VÀ NAVIGATION
+
+### Thanh điều hướng (Navbar):
+- **SmartBP**: Logo, click để về trang chủ
+- **Đường dẫn hiện tại**: Hiển thị vị trí đang ở
+- **Logout**: Đăng xuất khỏi hệ thống
+
+### Menu chính theo vai trò:
+
+**ADMIN có quyền truy cập:**
+- `/admin/dashboard` - Bảng điều khiển quản trị
+- `/admin/users` - Quản lý người dùng
+- `/admin/chat` - Chatbot hỗ trợ
+- `/admin/bluetooth` - Quản lý Bluetooth/Pi
+
+**DOCTOR có quyền truy cập:**
+- `/doctor/dashboard` - Bảng điều khiển bác sĩ
+- `/doctor/patients` - Danh sách bệnh nhân
+- `/doctor/chat` - Chatbot hỗ trợ
+
+**PATIENT có quyền truy cập:**
+- `/patient/dashboard` - Bảng điều khiển cá nhân
+- `/patient/monitoring` - Đo huyết áp
+- `/patient/history` - Lịch sử đo
+- `/patient/chat` - Chatbot hỗ trợ
+
+---
+
+## 3. HƯỚNG DẪN CHO BỆNH NHÂN (PATIENT)
+
+### 3.1 Bảng điều khiển (Dashboard)
+**Truy cập**: `/patient/dashboard`
+
+**Chức năng chính:**
+- Xem tổng quan thông tin cá nhân
+- Xem chỉ số huyết áp gần nhất
+- Xem biểu đồ xu hướng huyết áp
+- Truy cập nhanh các chức năng khác
+
+### 3.2 Đo huyết áp (Monitoring)
+**Truy cập**: `/patient/monitoring`
+
+#### BƯỚC 1: Chuẩn bị đo
+1. Ngồi thẳng lưng trên ghế
+2. Đặt chân bằng phẳng trên sàn
+3. Đặt tay lên bàn ngang tầm tim
+4. Thở đều, thư giãn 5 phút
+
+#### BƯỚC 2: Chọn phương thức đo
+
+**PHƯƠNG THỨC 1: Bluetooth (Tự động)**
+- Click **"Kết nối Bluetooth"**
+- Hệ thống quét thiết bị xung quanh
+- Chọn máy đo huyết áp của bạn
+- Đợi kết nối thành công
+- Màu xanh = kết nối thành công
+
+**PHƯƠNG THỨC 2: Manual (Nhập tay)**
+- Click **"Nhập tay"**
+- Đo bằng máy của bạn
+- Nhập kết quả vào form
+
+#### BƯỚC 3: Đeo cuff và kiểm tra tư thế
+1. **Đeo cuff đúng cách:**
+   - Cách khuỷu tay 1-2 inch (2.5-5cm)
+   - Phía trên đường trắng trên bắp tay
+   - Độ chặt: cho vừa 1 ngón tay
+
+2. **Kiểm tra tư thế qua camera:**
+   - Ngồi thẳng lưng ✅
+   - Tay ngang tim ✅
+   - Miệng khép kín ✅
+   - Không nói chuyện ✅
+
+#### BƯỚC 4: Tiến hành đo
+1. Click **"Bắt đầu đo"**
+2. Giữ yên lặng, không cử động
+3. Hệ thống sẽ hiển thị:
+   - Trạng thái tư thế (đỏ/xanh)
+   - Cảnh báo nếu có
+   - Kết quả đo (sau 30-60 giây)
+
+#### BƯỚC 5: Xác nhận và lưu kết quả
+1. **Kiểm tra kết quả hiển thị:**
+   - SYS (Tâm thu): mmHg
+   - DIA (Tâm trương): mmHg
+   - Pulse (Mạch): bpm
+
+2. **Chỉnh sửa nếu cần:**
+   - Click vào số để sửa
+   - Nhập giá trị đúng
+
+3. **Lưu kết quả:**
+   - Click **"Lưu kết quả"**
+   - Thông báo "Đã lưu thành công"
+
+#### BƯỚC 6: Mô phỏng (Demo)
+**Cho người dùng muốn thử không có thiết bị:**
+- Click **"Start Sim (SSE)"**
+- Xem mô phỏng các trạng thái
+- Kết quả demo sẽ hiển thị tự động
+- Click **"Lưu kết quả"** để ghi demo
+
+### 3.3 Xem lịch sử đo (History)
+**Truy cập**: `/patient/history`
+
+**Chức năng:**
+- Xem tất cả lần đo trước đó
+- Lọc theo ngày, tuần, tháng
+- Xuất dữ liệu (nếu có)
+- Xem biểu đồ xu hướng
+- In báo cáo cho bác sĩ
+
+**Cách sử dụng:**
+1. Chọn khoảng thời gian
+2. Click **"Lọc"**
+3. Xem kết quả trong bảng
+4. Click **"Chi tiết"** để xem từng lần đo
+
+### 3.4 Chat hỗ trợ (Chat)
+**Truy cập**: `/patient/chat`
+
+**Chức năng chatbot:**
+- Hỏi cách đo huyết áp
+- Hỏi ý nghĩa chỉ số
+- Hướng dẫn sử dụng website
+- Tư vấn sức khỏe cơ bản
+- Hỗ trợ kỹ thuật
+
+**Cách sử dụng:**
+1. Gõ câu hỏi vào ô chat
+2. Nhấn Enter hoặc click Send
+3. Chatbot tự nhận diện ngôn ngữ (Tiếng Việt/English)
+4. Nhận câu trả lời tức thì
+
+---
+
+## 4. HƯỚNG DẪN CHO BÁC SĨ (DOCTOR)
+
+### 4.1 Bảng điều khiển (Dashboard)
+**Truy cập**: `/doctor/dashboard`
+
+**Chức năng:**
+- Tổng quan bệnh nhân
+- Thống kê chung
+- Cảnh báo bất thường
+- Truy cập nhanh
+
+### 4.2 Quản lý bệnh nhân (Patients)
+**Truy cập**: `/doctor/patients`
+
+**Chức năng chính:**
+- Xem danh sách tất cả bệnh nhân
+- Lọc, tìm kiếm bệnh nhân
+- Xem chi tiết từng bệnh nhân
+- Xem lịch sử đo của bệnh nhân
+- Thêm ghi chú, đánh giá
+
+**Cách sử dụng:**
+1. **Xem danh sách:**
+   - Tất cả bệnh nhân hiển thị ở bảng chính
+   - Click **"Chi tiết"** để xem thông tin
+
+2. **Tìm kiếm bệnh nhân:**
+   - Nhập tên hoặc email vào ô tìm kiếm
+   - Kết quả hiện ngay lập tức
+
+3. **Xem lịch sử đo:**
+   - Click **"Lịch sử đo"**
+   - Xem tất cả phép đo của bệnh nhân
+   - Phân tích xu hướng
+
+4. **Thêm ghi chú:**
+   - Click **"Thêm ghi chú"**
+   - Viết nhận xét, chẩn đoán
+   - Lưu vào hồ sơ bệnh nhân
+
+### 4.3 Chat hỗ trợ (Chat)
+**Truy cập**: `/doctor/chat`
+
+**Chức năng đặc biệt cho bác sĩ:**
+- Hỏi về chỉ số bình thường/bất thường
+- Tham khảo hướng dẫn chẩn đoán
+- Tra cứu thông tin y khoa
+- Hỗ trợ tư vấn bệnh nhân
+
+---
+
+## 5. HƯỚNG DẪN CHO ADMIN
+
+### 5.1 Bảng điều khiển (Dashboard)
+**Truy cập**: `/admin/dashboard`
+
+**Thống kê hệ thống:**
+- Tổng số người dùng
+- Số lượt đo hôm nay
+- Trạng thái hệ thống
+- Báo cáo tổng quan
+
+### 5.2 Quản lý người dùng (Users)
+**Truy cập**: `/admin/users`
+
+**Chức năng:**
+- Xem tất cả tài khoản
+- Tạo tài khoản mới
+- Sửa thông tin người dùng
+- Xóa/vô hiệu hóa tài khoản
+- Phân quyền
+
+**Cách sử dụng:**
+1. **Tạo tài khoản mới:**
+   - Click **"Thêm người dùng"**
+   - Điền thông tin đầy đủ
+   - Chọn vai trò (Patient/Doctor/Admin)
+   - Click **"Tạo"**
+
+2. **Chỉnh sửa tài khoản:**
+   - Click **"Sửa"** ở hàng người dùng
+   - Thay đổi thông tin cần thiết
+   - Click **"Cập nhật"**
+
+3. **Xóa tài khoản:**
+   - Click **"Xóa"** ở hàng người dùng
+   - Xác nhận xóa
+
+### 5.3 Quản lý Bluetooth/Pi (Bluetooth)
+**Truy cập**: `/admin/bluetooth`
+
+**Chức năng:**
+- Quản lý kết nối Raspberry Pi
+- Kiểm tra trạng thái thiết bị
+- Cấu hình kết nối
+- Test kết nối
+
+**Cách sử dụng:**
+1. **Thêm Pi mới:**
+   - Nhập IP address của Pi
+   - Nhập port (mặc định: 8000)
+   - Click **"Kết nối"**
+
+2. **Kiểm tra trạng thái:**
+   - Xem danh sách Pi đã kết nối
+   - Trạng thái: Online/Offline
+   - Click **"Test"** để kiểm tra
+
+3. **Mô phỏng (Mock Simulation):**
+   - Click **"Start Mock Simulation"**
+   - Test hệ thống không cần Pi thật
+   - Sử dụng localhost:8000
+
+---
+
+## 6. TÍNH NĂNG CHATBOT
+
+### 6.1 Khả năng của chatbot
+**Chatbot SmartBP có thể:**
+- Trả lời bằng Tiếng Việt và English
+- Tự nhận diện ngôn ngữ
+- Hướng dẫn sử dụng website
+- Giải thích chỉ số huyết áp
+- Tư vấn cách đo đúng
+- Hỗ trợ kỹ thuật cơ bản
+
+### 6.2 Cách sử dụng chatbot
+1. **Truy cập chat:**
+   - Mọi vai trò đều có `/chat`
+   - Patient: `/patient/chat`
+   - Doctor: `/doctor/chat`  
+   - Admin: `/admin/chat`
+
+2. **Gõ câu hỏi:**
+   - Gõ bằng tiếng Việt hoặc English
+   - Không cần chọn ngôn ngữ
+   - Chatbot tự nhận diện
+
+3. **Ví dụ câu hỏi hay:**
+   - "Cách đo huyết áp đúng?"
+   - "120/80 có bình thường không?"
+   - "How to use Bluetooth?"
+   - "Làm sao xem lịch sử đo?"
+
+---
+
+## 7. BLUETOOTH VÀ THIẾT BỊ
+
+### 7.1 Kết nối máy đo Bluetooth
+**Hỗ trợ các loại máy:**
+- Omron các dòng có Bluetooth
+- A&D Medical Bluetooth
+- Các máy đo chuẩn BLE
+
+**Cách kết nối:**
+1. Bật Bluetooth trên máy đo
+2. Vào `/patient/monitoring`
+3. Click **"Kết nối Bluetooth"**
+4. Chọn tên máy đo trong danh sách
+5. Đợi kết nối thành công (màu xanh)
+
+### 7.2 Raspberry Pi setup
+**Cho admin setup hệ thống:**
+1. **Cài đặt Pi:**
+   - Cài Raspberry Pi OS
+   - Cài Python 3.8+
+   - Cài các thư viện cần thiết
+
+2. **Chạy bridge:**
+   - Copy code từ `/raspberrypi/`
+   - Chạy `python ble_bridge.py`
+   - Pi sẽ quét Bluetooth tự động
+
+3. **Kết nối với web:**
+   - Nhập IP Pi vào website
+   - Port mặc định: 8000
+   - Test kết nối
+
+### 7.3 Mock simulation (Demo)
+**Không có Pi thật:**
+1. Chạy `start_mock_simulation.bat`
+2. Hoặc `.\start_mock_simulation.ps1`
+3. Truy cập `/admin/bluetooth`
+4. Dùng IP: localhost:8000
+5. Test đầy đủ tính năng
+
+---
+
+## 8. XỬ LÝ LỖI VÀ TROUBLESHOOTING
+
+### 8.1 Lỗi đăng nhập
+**Triệu chứng:** Không đăng nhập được
+**Giải pháp:**
+- Kiểm tra email/password chính xác
+- Xóa cache browser (Ctrl+Shift+Delete)
+- Thử browser khác
+- Liên hệ admin nếu tài khoản bị khóa
+
+### 8.2 Lỗi Bluetooth
+**Triệu chứng:** Không quét được thiết bị
+**Giải pháp:**
+- Bật Bluetooth trên máy đo
+- Đảm bảo máy ở chế độ pairing
+- Refresh trang web
+- Thử đo manual thay thế
+- Kiểm tra Pi có online không
+
+### 8.3 Lỗi camera/tư thế
+**Triệu chứng:** Không hiển thị camera
+**Giải pháp:**
+- Cho phép camera access trên browser
+- Refresh trang
+- Thử browser khác
+- Kiểm tra Pi camera hoạt động
+
+### 8.4 Lỗi lưu kết quả
+**Triệu chứng:** "Lưu không thành công"
+**Giải pháp:**
+- Kiểm tra kết nối internet
+- Refresh và thử lại
+- Kiểm tra database connection
+- Liên hệ support
+
+---
+
+## 9. CÀI ĐẶT VÀ CẤU HÌNH
+
+### 9.1 Cài đặt hệ thống (Cho dev/admin)
+```bash
+# Clone repository
+git clone [repository-url]
+cd smartbp
+
+# Cài đặt dependencies
+pnpm install
+
+# Copy và cấu hình environment
+cp .env.example .env.local
+# Sửa DB connection và secrets
+
+# Setup database
+pnpm prisma:generate
+pnpm prisma:migrate
+pnpm seed
+
+# Chạy development
+pnpm dev
+```
+
+### 9.2 Environment variables quan trọng
+```
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="your-secret"
+NEXTAUTH_URL="http://localhost:3000"
+WEBHOOK_SECRET="dev-shared-webhook-secret"
+```
+
+### 9.3 Production deployment
+- Build: `pnpm build`
+- Start: `pnpm start`
+- Port mặc định: 3000
+- Setup reverse proxy (nginx)
+- SSL certificate setup
+
+---
+
+## 10. API VÀ TÍCH HỢP
+
+### 10.1 Webhook endpoint
+**URL:** `/api/measurements/webhook`
+**Method:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [WEBHOOK_SECRET]
+```
+**Body:**
+```json
+{
+  "userKey": "patient@smartbp.local",
+  "sys": 130,
+  "dia": 84,
+  "pulse": 72,
+  "telemetry": {
+    "posture_ok": true,
+    "mouth_open": false,
+    "speak": false
+  }
+}
+```
+
+### 10.2 Chatbot API
+**URL:** `/api/chatbot`
+**Method:** POST
+**Body:**
+```json
+{
+  "message": "Cách đo huyết áp?",
+  "language": "auto"
+}
+```
+
+### 10.3 MQTT integration (Tùy chọn)
+**Broker:** TCP 1883, WebSocket 9001
+**Topics:**
+- `smb/raspi/{userKey}/telemetry`
+- `smb/raspi/{userKey}/bp`
+- `smb/raspi/{userKey}/config`
+
+---
+
+## 11. BẢO MẬT VÀ QUYỀN RIÊNG TƯ
+
+### 11.1 Bảo mật dữ liệu
+- Mật khẩu được hash (bcrypt)
+- HTTPS bắt buộc (production)
+- Session management secure
+- Database encryption at rest
+
+### 11.2 Phân quyền
+- **Patient:** Chỉ xem dữ liệu của mình
+- **Doctor:** Xem bệnh nhân được assign
+- **Admin:** Full access toàn hệ thống
+
+### 11.3 Privacy compliance
+- Dữ liệu y tế được bảo vệ
+- Không share dữ liệu với third-party
+- User có quyền xóa dữ liệu
+- Tuân thủ GDPR/local regulations
+
+---
+
+## 12. HỖ TRỢ VÀ LIÊN HỆ
+
+### 12.1 Sử dụng chatbot
+- Truy cập `/chat` từ bất kỳ tài khoản nào
+- Hỏi trực tiếp bằng tiếng Việt/English
+- Chatbot có sẵn 24/7
+
+### 12.2 Báo lỗi
+- Mô tả chi tiết lỗi
+- Screenshot nếu có thể
+- Thông tin browser/device
+- Gửi qua chat hoặc email
+
+### 12.3 Yêu cầu tính năng mới
+- Mô tả tính năng mong muốn
+- Use case cụ thể
+- Độ ưu tiên
+- Gửi feedback qua chatbot
+
+---
+
+## 13. FAQ - CÂU HỎI THƯỜNG GẶP
+
+### Q: Tôi quên mật khẩu, làm sao để reset?
+A: Liên hệ admin để reset mật khẩu. Tính năng reset tự động sẽ có trong version sau.
+
+### Q: Máy đo của tôi không có Bluetooth, có dùng được không?
+A: Có! Chọn chế độ "Manual" và nhập kết quả tay.
+
+### Q: Kết quả đo có chính xác không?
+A: Hệ thống chỉ hiển thị kết quả từ máy đo của bạn. Chính xác phụ thuộc vào máy đo và cách đo.
+
+### Q: Tôi có thể xóa kết quả đo sai không?
+A: Hiện tại chưa hỗ trợ xóa. Liên hệ doctor/admin để chỉnh sửa.
+
+### Q: Website có app mobile không?
+A: Chưa có app riêng, nhưng website responsive chạy tốt trên mobile browser.
+
+### Q: Dữ liệu có được backup không?
+A: Có, database được backup tự động hàng ngày.
+
+### Q: Tôi có thể export dữ liệu không?
+A: Tính năng export đang phát triển, sẽ có trong version tiếp theo.
+
+---
+
+**LƯU Ý:** Tài liệu này được cập nhật liên tục. Phiên bản mới nhất luôn có trên chatbot SmartBP.

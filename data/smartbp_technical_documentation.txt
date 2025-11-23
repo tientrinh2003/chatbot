@@ -1,0 +1,968 @@
+# SMARTBP TECHNICAL FEATURES AND API DOCUMENTATION
+## Tài liệu kỹ thuật cho developers và advanced users
+
+---
+
+## 1. SYSTEM ARCHITECTURE OVERVIEW
+
+### 1.1 Technology Stack
+**Frontend:**
+- Next.js 15.5.3 with React 19.1.1
+- TypeScript for type safety
+- Tailwind CSS for styling
+- NextAuth.js for authentication
+
+**Backend:**
+- Supabase PostgreSQL database (cloud)
+- Prisma ORM for database operations
+- FastAPI Python backend for chatbot
+- Server-Sent Events (SSE) for real-time updates
+
+**IoT & Hardware:**
+- Raspberry Pi 4/5 as bridge device
+- Bluetooth Low Energy (BLE) for device communication
+- OpenCV + MediaPipe for posture detection
+- MQTT for optional real-time messaging
+
+### 1.2 Project Structure
+```
+smartbp/
+├── app/                    # Next.js app router
+│   ├── (admin)/           # Admin-only routes with layout
+│   ├── admin/             # Admin dashboard pages
+│   ├── doctor/            # Doctor dashboard pages
+│   ├── patient/           # Patient dashboard pages
+│   ├── api/               # API routes
+│   │   ├── auth/          # NextAuth.js handlers
+│   │   ├── bluetooth/     # Bluetooth management
+│   │   ├── chatbot/       # Chatbot integration
+│   │   └── measurements/  # Measurement data APIs
+│   ├── login/             # Authentication pages
+│   └── register/          # User registration
+├── components/            # Reusable React components
+├── lib/                   # Utility libraries
+├── prisma/               # Database schema and migrations
+├── raspberrypi/          # Pi bridge code
+└── public/               # Static assets
+```
+
+---
+
+## 2. DATABASE SCHEMA
+
+### 2.1 Core Tables
+**User Table:**
+```sql
+CREATE TABLE User (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  name TEXT,
+  role UserRole NOT NULL DEFAULT 'PATIENT',
+  createdAt TIMESTAMP DEFAULT NOW(),
+  updatedAt TIMESTAMP DEFAULT NOW()
+);
+
+-- UserRole: PATIENT | DOCTOR | ADMIN
+```
+
+**BloodPressure Measurement:**
+```sql
+CREATE TABLE BloodPressure (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL REFERENCES User(id),
+  systolic INTEGER NOT NULL,
+  diastolic INTEGER NOT NULL,
+  pulse INTEGER,
+  measurementDate TIMESTAMP NOT NULL,
+  deviceType TEXT,
+  notes TEXT,
+  isValidated BOOLEAN DEFAULT FALSE,
+  validatedBy TEXT REFERENCES User(id),
+  createdAt TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Device Management:**
+```sql
+CREATE TABLE Device (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL REFERENCES User(id),
+  deviceName TEXT NOT NULL,
+  deviceType TEXT NOT NULL, -- 'BLUETOOTH_BP' | 'MANUAL'
+  bluetoothAddress TEXT,
+  piHostAddress TEXT,
+  lastConnected TIMESTAMP,
+  isActive BOOLEAN DEFAULT TRUE
+);
+```
+
+### 2.2 Relationships
+- User (1) → (N) BloodPressure measurements  
+- User (1) → (N) Device connections
+- User (Doctor) (1) → (N) User (Patient) assignments
+
+---
+
+## 3. API DOCUMENTATION
+
+### 3.1 Authentication APIs
+
+**Login:**
+```http
+POST /api/auth/signin
+Content-Type: application/json
+
+{
+  "email": "patient@smartbp.local",
+  "password": "123456"
+}
+
+Response:
+{
+  "user": {
+    "id": "user_id",
+    "email": "patient@smartbp.local", 
+    "name": "Patient Name",
+    "role": "PATIENT"
+  },
+  "sessionToken": "jwt_token"
+}
+```
+
+**Register:**
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "New User",
+  "email": "newuser@example.com",
+  "password": "password123",
+  "role": "PATIENT"
+}
+```
+
+### 3.2 Blood Pressure APIs
+
+**Get User Measurements:**
+```http
+GET /api/measurements?userId={userId}&limit=10&offset=0
+Authorization: Bearer {sessionToken}
+
+Response:
+{
+  "measurements": [
+    {
+      "id": "measurement_id",
+      "systolic": 120,
+      "diastolic": 80,
+      "pulse": 72,
+      "measurementDate": "2024-01-15T10:30:00Z",
+      "deviceType": "BLUETOOTH_BP"
+    }
+  ],
+  "total": 45,
+  "hasMore": true
+}
+```
+
+**Create New Measurement:**
+```http
+POST /api/measurements
+Authorization: Bearer {sessionToken}
+Content-Type: application/json
+
+{
+  "systolic": 130,
+  "diastolic": 85,
+  "pulse": 75,
+  "deviceType": "MANUAL",
+  "notes": "Morning measurement"
+}
+```
+
+**Webhook for Pi Data:**
+```http
+POST /api/measurements/webhook
+Authorization: Bearer {WEBHOOK_SECRET}
+Content-Type: application/json
+
+{
+  "userKey": "patient@smartbp.local",
+  "sys": 135,
+  "dia": 88,
+  "pulse": 78,
+  "deviceAddress": "AA:BB:CC:DD:EE:FF",
+  "piHost": "192.168.1.100",
+  "telemetry": {
+    "posture_ok": true,
+    "mouth_open": false,
+    "speak": false,
+    "measurement_quality": "good"
+  }
+}
+```
+
+### 3.3 Bluetooth Management APIs
+
+**Get Paired Devices:**
+```http
+GET /api/bluetooth/devices
+Authorization: Bearer {sessionToken}
+
+Response:
+{
+  "devices": [
+    {
+      "id": "device_id",
+      "name": "OMRON HEM-7156T",
+      "bluetoothAddress": "AA:BB:CC:DD:EE:FF",
+      "lastConnected": "2024-01-15T10:30:00Z",
+      "isActive": true
+    }
+  ]
+}
+```
+
+**Scan for New Devices:**
+```http
+POST /api/bluetooth/scan
+Authorization: Bearer {sessionToken}
+Content-Type: application/json
+
+{
+  "piHost": "192.168.1.100",
+  "timeout": 10
+}
+
+Response:
+{
+  "discoveredDevices": [
+    {
+      "name": "OMRON HEM-7156T",
+      "address": "AA:BB:CC:DD:EE:FF",
+      "rssi": -45,
+      "deviceType": "BloodPressureMeter"
+    }
+  ]
+}
+```
+
+### 3.4 Chatbot Integration API
+
+**Chat with Bot:**
+```http
+POST /api/chatbot
+Authorization: Bearer {sessionToken}
+Content-Type: application/json
+
+{
+  "message": "Cách đo huyết áp đúng cách?",
+  "language": "auto",
+  "context": {
+    "userRole": "PATIENT",
+    "lastMeasurement": {
+      "systolic": 130,
+      "diastolic": 85,
+      "date": "2024-01-15T10:30:00Z"
+    }
+  }
+}
+
+Response:
+{
+  "response": "Để đo huyết áp chính xác, bạn cần...",
+  "detectedLanguage": "vi",
+  "confidence": 0.95,
+  "sources": ["huong_dan_su_dung.txt"],
+  "followUpQuestions": [
+    "Máy đo Bluetooth kết nối thế nào?",
+    "Chỉ số 130/85 có bình thường không?"
+  ]
+}
+```
+
+---
+
+## 4. RASPBERRY PI INTEGRATION
+
+### 4.1 BLE Bridge Setup
+
+**Installation on Pi:**
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python dependencies
+pip3 install bleak fastapi uvicorn opencv-python mediapipe numpy
+
+# Install system dependencies
+sudo apt install bluetooth bluez libbluetooth-dev
+
+# Enable camera
+sudo raspi-config # Enable camera in Interface Options
+```
+
+**Bridge Code Structure:**
+```python
+# ble_bridge.py - Main bridge application
+from bleak import BleakScanner, BleakClient
+import asyncio
+import fastapi
+import uvicorn
+
+class BLEBridge:
+    def __init__(self):
+        self.connected_devices = {}
+        self.app = FastAPI()
+        self.setup_routes()
+    
+    async def scan_devices(self, timeout=10):
+        """Scan for BLE blood pressure devices"""
+        devices = await BleakScanner.discover(timeout=timeout)
+        bp_devices = []
+        
+        for device in devices:
+            if self.is_bp_device(device):
+                bp_devices.append({
+                    "name": device.name,
+                    "address": device.address,
+                    "rssi": device.rssi
+                })
+        
+        return bp_devices
+    
+    async def connect_device(self, address):
+        """Connect to specific BP device"""
+        client = BleakClient(address)
+        await client.connect()
+        
+        # Subscribe to BP measurement notifications
+        await client.start_notify(BP_MEASUREMENT_CHAR, self.handle_bp_data)
+        
+        self.connected_devices[address] = client
+        return True
+    
+    async def handle_bp_data(self, sender, data):
+        """Process incoming BP measurement data"""
+        measurement = self.parse_bp_data(data)
+        
+        # Send to web server via webhook
+        await self.send_to_server(measurement)
+```
+
+### 4.2 Camera & Posture Detection
+
+**Posture Detection Code:**
+```python
+import cv2
+import mediapipe as mp
+
+class PostureDetector:
+    def __init__(self):
+        self.mp_pose = mp.solutions.pose
+        self.pose = self.mp_pose.Pose(
+            static_image_mode=False,
+            model_complexity=1,
+            enable_segmentation=False,
+            min_detection_confidence=0.5
+        )
+    
+    def analyze_posture(self, frame):
+        """Analyze sitting posture for BP measurement"""
+        results = self.pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        
+        if results.pose_landmarks:
+            landmarks = results.pose_landmarks.landmark
+            
+            # Check key posture points
+            posture_checks = {
+                "back_straight": self.check_back_posture(landmarks),
+                "arm_position": self.check_arm_position(landmarks),
+                "feet_on_ground": self.check_feet_position(landmarks)
+            }
+            
+            return posture_checks
+        
+        return {"posture_detected": False}
+    
+    def check_back_posture(self, landmarks):
+        """Check if back is straight"""
+        shoulder = landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value]
+        hip = landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value]
+        
+        # Calculate angle between shoulder and hip
+        angle = self.calculate_angle(shoulder, hip)
+        
+        return {"straight": abs(angle - 90) < 15, "angle": angle}
+```
+
+### 4.3 Communication Protocols
+
+**HTTP Webhook (Primary):**
+```python
+async def send_measurement_webhook(measurement_data):
+    """Send measurement via HTTP webhook"""
+    webhook_url = f"{WEB_SERVER_URL}/api/measurements/webhook"
+    
+    payload = {
+        "userKey": measurement_data["user_email"],
+        "sys": measurement_data["systolic"],
+        "dia": measurement_data["diastolic"],
+        "pulse": measurement_data["pulse"],
+        "deviceAddress": measurement_data["device_address"],
+        "piHost": get_local_ip(),
+        "telemetry": measurement_data["posture_data"]
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {WEBHOOK_SECRET}",
+        "Content-Type": "application/json"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(webhook_url, json=payload, headers=headers)
+        return response.status_code == 200
+```
+
+**MQTT (Optional):**
+```python
+import paho.mqtt.client as mqtt
+
+class MQTTBridge:
+    def __init__(self, broker_host, broker_port=1883):
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.connect(broker_host, broker_port, 60)
+    
+    def publish_measurement(self, user_key, measurement):
+        """Publish BP measurement to MQTT topic"""
+        topic = f"smb/raspi/{user_key}/bp"
+        payload = json.dumps(measurement)
+        self.client.publish(topic, payload)
+    
+    def publish_telemetry(self, user_key, telemetry):
+        """Publish posture/voice telemetry"""
+        topic = f"smb/raspi/{user_key}/telemetry"  
+        payload = json.dumps(telemetry)
+        self.client.publish(topic, payload)
+```
+
+---
+
+## 5. REAL-TIME FEATURES
+
+### 5.1 Server-Sent Events (SSE)
+
+**SSE Endpoint:**
+```typescript
+// /api/measurements/stream/[userId]/route.ts
+export async function GET(request: Request, { params }: { params: { userId: string } }) {
+  const { userId } = params;
+  
+  const stream = new ReadableStream({
+    start(controller) {
+      // Send initial connection
+      controller.enqueue(`data: {"type":"connected","userId":"${userId}"}\n\n`);
+      
+      // Setup measurement listener
+      const measurementListener = (measurement: BloodPressureMeasurement) => {
+        if (measurement.userId === userId) {
+          controller.enqueue(`data: ${JSON.stringify({
+            type: 'measurement',
+            data: measurement
+          })}\n\n`);
+        }
+      };
+      
+      // Setup telemetry listener  
+      const telemetryListener = (telemetry: PostureTelemetry) => {
+        controller.enqueue(`data: ${JSON.stringify({
+          type: 'telemetry',
+          data: telemetry
+        })}\n\n`);
+      };
+      
+      // Register listeners
+      EventBus.on('measurement', measurementListener);
+      EventBus.on('telemetry', telemetryListener);
+      
+      // Cleanup on close
+      request.signal.addEventListener('abort', () => {
+        EventBus.off('measurement', measurementListener);
+        EventBus.off('telemetry', telemetryListener);
+        controller.close();
+      });
+    }
+  });
+  
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+```
+
+**Frontend SSE Consumer:**
+```typescript
+// components/MeasurementStream.tsx
+export function MeasurementStream({ userId }: { userId: string }) {
+  const [measurements, setMeasurements] = useState<BloodPressureMeasurement[]>([]);
+  const [telemetry, setTelemetry] = useState<PostureTelemetry | null>(null);
+  
+  useEffect(() => {
+    const eventSource = new EventSource(`/api/measurements/stream/${userId}`);
+    
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      switch (data.type) {
+        case 'measurement':
+          setMeasurements(prev => [data.data, ...prev]);
+          break;
+        case 'telemetry':
+          setTelemetry(data.data);
+          break;
+      }
+    };
+    
+    eventSource.onerror = (error) => {
+      console.error('SSE Error:', error);
+      eventSource.close();
+    };
+    
+    return () => eventSource.close();
+  }, [userId]);
+  
+  return (
+    <div>
+      {telemetry && <PostureIndicator data={telemetry} />}
+      <MeasurementList measurements={measurements} />
+    </div>
+  );
+}
+```
+
+### 5.2 WebSocket Alternative
+
+**WebSocket Server:**
+```typescript
+// lib/websocket.ts
+import { WebSocketServer } from 'ws';
+
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on('connection', (ws, request) => {
+  const userId = getUserIdFromRequest(request);
+  
+  ws.on('message', (message) => {
+    const data = JSON.parse(message.toString());
+    
+    switch (data.type) {
+      case 'subscribe_measurements':
+        subscribeToMeasurements(ws, userId);
+        break;
+      case 'start_measurement':
+        initiateBluetoothMeasurement(userId);
+        break;
+    }
+  });
+  
+  ws.on('close', () => {
+    unsubscribeFromMeasurements(ws, userId);
+  });
+});
+```
+
+---
+
+## 6. MOCK SIMULATION SYSTEM
+
+### 6.1 Mock Pi Server
+
+**Mock Server Code:**
+```python
+# raspberrypi/mock_raspberry_pi.py
+from fastapi import FastAPI, BackgroundTasks
+import asyncio
+import random
+import time
+
+app = FastAPI()
+
+class MockBPDevice:
+    def __init__(self):
+        self.is_measuring = False
+        self.measurement_data = {}
+    
+    async def simulate_measurement(self):
+        """Simulate BP measurement process"""
+        self.is_measuring = True
+        
+        # Simulate measurement duration (30-60 seconds)
+        measurement_time = random.uniform(30, 60)
+        await asyncio.sleep(measurement_time)
+        
+        # Generate realistic BP values
+        systolic = random.randint(90, 180)
+        diastolic = random.randint(60, 110) 
+        pulse = random.randint(60, 100)
+        
+        self.measurement_data = {
+            "systolic": systolic,
+            "diastolic": diastolic,
+            "pulse": pulse,
+            "timestamp": time.time(),
+            "quality": "good" if systolic < 160 else "attention_needed"
+        }
+        
+        self.is_measuring = False
+        return self.measurement_data
+
+mock_device = MockBPDevice()
+
+@app.get("/api/bluetooth/scan")
+async def scan_devices():
+    """Mock Bluetooth device scan"""
+    return {
+        "devices": [
+            {
+                "name": "OMRON HEM-7156T (Mock)",
+                "address": "AA:BB:CC:DD:EE:FF",
+                "rssi": -45,
+                "deviceType": "BloodPressureMeter"
+            },
+            {
+                "name": "A&D UA-651BLE (Mock)",
+                "address": "11:22:33:44:55:66", 
+                "rssi": -52,
+                "deviceType": "BloodPressureMeter"
+            }
+        ]
+    }
+
+@app.post("/api/bluetooth/connect")
+async def connect_device(device_data: dict):
+    """Mock device connection"""
+    return {
+        "success": True,
+        "device": device_data,
+        "status": "connected"
+    }
+
+@app.post("/api/measurement/start")
+async def start_measurement(background_tasks: BackgroundTasks):
+    """Start mock measurement process"""
+    if mock_device.is_measuring:
+        return {"error": "Measurement already in progress"}
+    
+    background_tasks.add_task(mock_device.simulate_measurement)
+    
+    return {
+        "success": True,
+        "message": "Measurement started",
+        "estimated_duration": 45
+    }
+
+@app.get("/api/measurement/status")
+async def get_measurement_status():
+    """Get current measurement status"""
+    return {
+        "is_measuring": mock_device.is_measuring,
+        "data": mock_device.measurement_data if not mock_device.is_measuring else None
+    }
+```
+
+### 6.2 Mock Simulation Scripts
+
+**Windows Batch Script:**
+```batch
+REM start_mock_simulation.bat
+@echo off
+echo Starting SmartBP Mock Simulation...
+
+REM Start mock Raspberry Pi server
+echo Starting Mock Pi Server on port 8000...
+cd raspberrypi
+start "Mock Pi Server" python mock_raspberry_pi.py
+
+REM Wait for Pi server to start
+timeout /t 3 /nobreak > nul
+
+REM Start main web application
+echo Starting SmartBP Web Application...
+cd ..
+start "SmartBP Web" npm run dev
+
+echo.
+echo Mock Simulation Started!
+echo.
+echo - Mock Pi Server: http://localhost:8000
+echo - SmartBP Web: http://localhost:3000
+echo.
+echo Use these credentials to login:
+echo - Admin: admin@smartbp.local / 123456
+echo - Doctor: doctor@smartbp.local / 123456
+echo - Patient: patient@smartbp.local / 123456
+echo.
+echo Go to http://localhost:3000/admin/bluetooth to connect to Mock Pi
+echo Use Pi IP: localhost:8000
+echo.
+pause
+```
+
+**PowerShell Script:**
+```powershell
+# start_mock_simulation.ps1
+Write-Host "Starting SmartBP Mock Simulation..." -ForegroundColor Green
+
+# Start mock Raspberry Pi server
+Write-Host "Starting Mock Pi Server on port 8000..." -ForegroundColor Yellow
+Set-Location raspberrypi
+Start-Process -NoNewWindow -FilePath "python" -ArgumentList "mock_raspberry_pi.py"
+
+# Wait for Pi server to start  
+Start-Sleep -Seconds 3
+
+# Start main web application
+Write-Host "Starting SmartBP Web Application..." -ForegroundColor Yellow
+Set-Location ..
+Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
+
+Write-Host ""
+Write-Host "Mock Simulation Started!" -ForegroundColor Green
+Write-Host ""
+Write-Host "- Mock Pi Server: http://localhost:8000" -ForegroundColor Cyan
+Write-Host "- SmartBP Web: http://localhost:3000" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Demo Credentials:" -ForegroundColor Yellow
+Write-Host "- Admin: admin@smartbp.local / 123456"
+Write-Host "- Doctor: doctor@smartbp.local / 123456"  
+Write-Host "- Patient: patient@smartbp.local / 123456"
+Write-Host ""
+Write-Host "Setup Instructions:" -ForegroundColor Magenta
+Write-Host "1. Go to http://localhost:3000/admin/bluetooth"
+Write-Host "2. Enter Pi IP: localhost:8000"
+Write-Host "3. Click Connect to start using Mock Pi"
+Write-Host ""
+Read-Host "Press Enter to continue..."
+```
+
+---
+
+## 7. DEPLOYMENT AND PRODUCTION
+
+### 7.1 Environment Configuration
+
+**Production Environment Variables:**
+```bash
+# .env.production
+DATABASE_URL="postgresql://username:password@host:5432/smartbp"
+NEXTAUTH_SECRET="production-secret-key-256-bit"
+NEXTAUTH_URL="https://smartbp.yourdomain.com"
+
+# Webhook security
+WEBHOOK_SECRET="production-webhook-secret"
+
+# MQTT (optional)
+MQTT_TCP_HOST="mqtt.yourdomain.com"
+MQTT_TCP_PORT=1883
+NEXT_PUBLIC_MQTT_URL="wss://mqtt.yourdomain.com:9001/mqtt"
+
+# Supabase (recommended)
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
+### 7.2 Docker Deployment
+
+**Dockerfile:**
+```dockerfile
+FROM node:18-alpine AS base
+
+# Install dependencies
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
+
+# Build application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build Next.js
+RUN npm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+**Docker Compose:**
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  smartbp-web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=smartbp
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl/certs
+    depends_on:
+      - smartbp-web
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
+
+### 7.3 Production Monitoring
+
+**Health Check Endpoints:**
+```typescript
+// app/api/health/route.ts
+export async function GET() {
+  try {
+    // Check database connection
+    await prisma.$queryRaw`SELECT 1`;
+    
+    // Check external services
+    const checks = {
+      database: "healthy",
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version,
+      uptime: process.uptime()
+    };
+    
+    return Response.json(checks);
+  } catch (error) {
+    return Response.json(
+      { status: "unhealthy", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Logging Configuration:**
+```typescript
+// lib/logger.ts
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  defaultMeta: { service: 'smartbp' },
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+export default logger;
+```
+
+---
+
+## 8. SECURITY CONSIDERATIONS
+
+### 8.1 Authentication Security
+- JWT tokens with short expiration (15 minutes)
+- Refresh token rotation
+- Secure cookie settings (httpOnly, secure, sameSite)
+- Password hashing with bcrypt (12 rounds)
+
+### 8.2 API Security
+- Rate limiting on sensitive endpoints
+- Request validation with Zod schemas  
+- CORS configuration for allowed origins
+- Webhook signature verification
+
+### 8.3 Data Protection
+- Database encryption at rest
+- TLS 1.3 for data in transit
+- Personal data pseudonymization
+- Regular security audits
+
+### 8.4 Device Security
+- Bluetooth pairing verification
+- Pi device authentication
+- Encrypted communication channels
+- Device access logging
+
+---
+
+**NOTE:** This technical documentation is for advanced users and developers. For general usage, please refer to the main user guides in Vietnamese and English.

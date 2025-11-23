@@ -1,0 +1,558 @@
+# SMARTBP WEBSITE COMPREHENSIVE USER GUIDE
+## Smart Blood Pressure Monitoring System - Complete Manual
+
+---
+
+## SMARTBP SYSTEM OVERVIEW
+
+SmartBP is an intelligent blood pressure monitoring system with 3 main account types:
+- **Admin**: System administration and management
+- **Doctor**: Patient monitoring and management  
+- **Patient**: Blood pressure measurement and health tracking
+
+Website: **http://localhost:3000** (local) or official domain
+
+---
+
+## 1. LOGIN AND ACCOUNT MANAGEMENT
+
+### How to Login:
+1. Access SmartBP website
+2. Click **"Login"** button in top-right corner
+3. Enter your **email** and **password**
+4. Click **"Login"**
+
+### Demo Accounts Available:
+- **Admin**: admin@smartbp.local / 123456
+- **Doctor**: doctor@smartbp.local / 123456  
+- **Patient**: patient@smartbp.local / 123456
+
+### Register New Account:
+1. From login page, click **"Register"**
+2. Fill in complete information:
+   - Full name
+   - Email address
+   - Password (minimum 6 characters)
+   - Confirm password
+   - Select role: Patient/Doctor
+3. Click **"Register"**
+4. System will automatically log you in
+
+---
+
+## 2. MAIN INTERFACE AND NAVIGATION
+
+### Navigation Bar (Navbar):
+- **SmartBP**: Logo, click to return to homepage
+- **Current Path**: Shows your current location
+- **Logout**: Sign out from system
+
+### Main Menu by Role:
+
+**ADMIN Access:**
+- `/admin/dashboard` - Administrative dashboard
+- `/admin/users` - User management
+- `/admin/chat` - Chatbot support
+- `/admin/bluetooth` - Bluetooth/Pi management
+
+**DOCTOR Access:**
+- `/doctor/dashboard` - Doctor dashboard
+- `/doctor/patients` - Patient list
+- `/doctor/chat` - Chatbot support
+
+**PATIENT Access:**
+- `/patient/dashboard` - Personal dashboard
+- `/patient/monitoring` - Blood pressure measurement
+- `/patient/history` - Measurement history
+- `/patient/chat` - Chatbot support
+
+---
+
+## 3. PATIENT USER GUIDE
+
+### 3.1 Dashboard
+**Access**: `/patient/dashboard`
+
+**Main Functions:**
+- View personal information overview
+- See latest blood pressure readings
+- View blood pressure trend charts
+- Quick access to other features
+
+### 3.2 Blood Pressure Monitoring
+**Access**: `/patient/monitoring`
+
+#### STEP 1: Preparation
+1. Sit straight in a chair
+2. Place feet flat on floor
+3. Rest arm on table at heart level
+4. Breathe steadily, relax for 5 minutes
+
+#### STEP 2: Choose Measurement Method
+
+**METHOD 1: Bluetooth (Automatic)**
+- Click **"Connect Bluetooth"**
+- System scans nearby devices
+- Select your blood pressure monitor
+- Wait for successful connection
+- Green color = successful connection
+
+**METHOD 2: Manual (Hand Input)**
+- Click **"Manual Input"**
+- Measure with your own device
+- Enter results in the form
+
+#### STEP 3: Attach Cuff and Check Posture
+1. **Proper Cuff Attachment:**
+   - 1-2 inches above elbow crease
+   - Above the white line on upper arm
+   - Tightness: fit one finger underneath
+
+2. **Posture Check via Camera:**
+   - Sit with straight back ✅
+   - Arm at heart level ✅
+   - Mouth closed ✅
+   - No talking ✅
+
+#### STEP 4: Take Measurement
+1. Click **"Start Measurement"**
+2. Stay still and quiet
+3. System will display:
+   - Posture status (red/green)
+   - Warnings if any
+   - Measurement results (after 30-60 seconds)
+
+#### STEP 5: Confirm and Save Results
+1. **Check Displayed Results:**
+   - SYS (Systolic): mmHg
+   - DIA (Diastolic): mmHg
+   - Pulse: bpm
+
+2. **Edit if Needed:**
+   - Click on number to edit
+   - Enter correct value
+
+3. **Save Results:**
+   - Click **"Save Results"**
+   - "Successfully saved" notification
+
+#### STEP 6: Simulation (Demo)
+**For users who want to try without devices:**
+- Click **"Start Sim (SSE)"**
+- Watch simulation of various states
+- Demo results will display automatically
+- Click **"Save Results"** to record demo
+
+### 3.3 View Measurement History
+**Access**: `/patient/history`
+
+**Functions:**
+- View all previous measurements
+- Filter by day, week, month
+- Export data (if available)
+- View trend charts
+- Print reports for doctor
+
+**How to Use:**
+1. Select time range
+2. Click **"Filter"**
+3. View results in table
+4. Click **"Details"** to see individual measurements
+
+### 3.4 Chat Support
+**Access**: `/patient/chat`
+
+**Chatbot Functions:**
+- Ask how to measure blood pressure
+- Ask about reading meanings
+- Website usage instructions
+- Basic health advice
+- Technical support
+
+**How to Use:**
+1. Type question in chat box
+2. Press Enter or click Send
+3. Chatbot auto-detects language (Vietnamese/English)
+4. Receive instant responses
+
+---
+
+## 4. DOCTOR USER GUIDE
+
+### 4.1 Dashboard
+**Access**: `/doctor/dashboard`
+
+**Functions:**
+- Patient overview
+- General statistics
+- Abnormality alerts
+- Quick access
+
+### 4.2 Patient Management
+**Access**: `/doctor/patients`
+
+**Main Functions:**
+- View list of all patients
+- Filter and search patients
+- View individual patient details
+- View patient measurement history
+- Add notes and assessments
+
+**How to Use:**
+1. **View Patient List:**
+   - All patients displayed in main table
+   - Click **"Details"** to view information
+
+2. **Search Patients:**
+   - Enter name or email in search box
+   - Results appear instantly
+
+3. **View Measurement History:**
+   - Click **"Measurement History"**
+   - View all patient measurements
+   - Analyze trends
+
+4. **Add Notes:**
+   - Click **"Add Note"**
+   - Write comments, diagnosis
+   - Save to patient record
+
+### 4.3 Chat Support
+**Access**: `/doctor/chat`
+
+**Special Functions for Doctors:**
+- Ask about normal/abnormal readings
+- Consult diagnostic guidelines
+- Medical information lookup
+- Patient consultation support
+
+---
+
+## 5. ADMIN USER GUIDE
+
+### 5.1 Dashboard
+**Access**: `/admin/dashboard`
+
+**System Statistics:**
+- Total users
+- Today's measurements
+- System status
+- General reports
+
+### 5.2 User Management
+**Access**: `/admin/users`
+
+**Functions:**
+- View all accounts
+- Create new accounts
+- Edit user information
+- Delete/disable accounts
+- Manage permissions
+
+**How to Use:**
+1. **Create New Account:**
+   - Click **"Add User"**
+   - Fill in complete information
+   - Select role (Patient/Doctor/Admin)
+   - Click **"Create"**
+
+2. **Edit Account:**
+   - Click **"Edit"** on user row
+   - Change necessary information
+   - Click **"Update"**
+
+3. **Delete Account:**
+   - Click **"Delete"** on user row
+   - Confirm deletion
+
+### 5.3 Bluetooth/Pi Management
+**Access**: `/admin/bluetooth`
+
+**Functions:**
+- Manage Raspberry Pi connections
+- Check device status
+- Configure connections
+- Test connections
+
+**How to Use:**
+1. **Add New Pi:**
+   - Enter Pi IP address
+   - Enter port (default: 8000)
+   - Click **"Connect"**
+
+2. **Check Status:**
+   - View list of connected Pis
+   - Status: Online/Offline
+   - Click **"Test"** to check
+
+3. **Mock Simulation:**
+   - Click **"Start Mock Simulation"**
+   - Test system without real Pi
+   - Use localhost:8000
+
+---
+
+## 6. CHATBOT FEATURES
+
+### 6.1 Chatbot Capabilities
+**SmartBP Chatbot can:**
+- Respond in Vietnamese and English
+- Auto-detect language
+- Provide website usage instructions
+- Explain blood pressure readings
+- Guide proper measurement techniques
+- Basic technical support
+
+### 6.2 How to Use Chatbot
+1. **Access Chat:**
+   - All roles have `/chat`
+   - Patient: `/patient/chat`
+   - Doctor: `/doctor/chat`  
+   - Admin: `/admin/chat`
+
+2. **Type Questions:**
+   - Type in Vietnamese or English
+   - No need to select language
+   - Chatbot auto-detects
+
+3. **Example Good Questions:**
+   - "How to measure blood pressure correctly?"
+   - "Is 120/80 normal?"
+   - "Cách dùng Bluetooth?"
+   - "How to view measurement history?"
+
+---
+
+## 7. BLUETOOTH AND DEVICES
+
+### 7.1 Connecting Bluetooth BP Monitor
+**Supported Devices:**
+- Omron Bluetooth models
+- A&D Medical Bluetooth
+- Standard BLE blood pressure monitors
+
+**Connection Steps:**
+1. Turn on Bluetooth on BP monitor
+2. Go to `/patient/monitoring`
+3. Click **"Connect Bluetooth"**
+4. Select your monitor from list
+5. Wait for successful connection (green color)
+
+### 7.2 Raspberry Pi Setup
+**For admin system setup:**
+1. **Install Pi:**
+   - Install Raspberry Pi OS
+   - Install Python 3.8+
+   - Install required libraries
+
+2. **Run Bridge:**
+   - Copy code from `/raspberrypi/`
+   - Run `python ble_bridge.py`
+   - Pi will scan Bluetooth automatically
+
+3. **Connect to Web:**
+   - Enter Pi IP in website
+   - Default port: 8000
+   - Test connection
+
+### 7.3 Mock Simulation (Demo)
+**Without real Pi:**
+1. Run `start_mock_simulation.bat`
+2. Or `.\start_mock_simulation.ps1`
+3. Access `/admin/bluetooth`
+4. Use IP: localhost:8000
+5. Test full features
+
+---
+
+## 8. ERROR HANDLING AND TROUBLESHOOTING
+
+### 8.1 Login Errors
+**Symptoms:** Cannot login
+**Solutions:**
+- Check email/password accuracy
+- Clear browser cache (Ctrl+Shift+Delete)
+- Try different browser
+- Contact admin if account locked
+
+### 8.2 Bluetooth Errors
+**Symptoms:** Cannot scan devices
+**Solutions:**
+- Turn on Bluetooth on BP monitor
+- Ensure device in pairing mode
+- Refresh web page
+- Try manual measurement instead
+- Check Pi is online
+
+### 8.3 Camera/Posture Errors
+**Symptoms:** Camera not showing
+**Solutions:**
+- Allow camera access in browser
+- Refresh page
+- Try different browser
+- Check Pi camera working
+
+### 8.4 Save Result Errors
+**Symptoms:** "Save failed"
+**Solutions:**
+- Check internet connection
+- Refresh and try again
+- Check database connection
+- Contact support
+
+---
+
+## 9. INSTALLATION AND CONFIGURATION
+
+### 9.1 System Installation (For dev/admin)
+```bash
+# Clone repository
+git clone [repository-url]
+cd smartbp
+
+# Install dependencies
+pnpm install
+
+# Copy and configure environment
+cp .env.example .env.local
+# Edit DB connection and secrets
+
+# Setup database
+pnpm prisma:generate
+pnpm prisma:migrate
+pnpm seed
+
+# Run development
+pnpm dev
+```
+
+### 9.2 Important Environment Variables
+```
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="your-secret"
+NEXTAUTH_URL="http://localhost:3000"
+WEBHOOK_SECRET="dev-shared-webhook-secret"
+```
+
+### 9.3 Production Deployment
+- Build: `pnpm build`
+- Start: `pnpm start`
+- Default port: 3000
+- Setup reverse proxy (nginx)
+- SSL certificate setup
+
+---
+
+## 10. API AND INTEGRATION
+
+### 10.1 Webhook Endpoint
+**URL:** `/api/measurements/webhook`
+**Method:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [WEBHOOK_SECRET]
+```
+**Body:**
+```json
+{
+  "userKey": "patient@smartbp.local",
+  "sys": 130,
+  "dia": 84,
+  "pulse": 72,
+  "telemetry": {
+    "posture_ok": true,
+    "mouth_open": false,
+    "speak": false
+  }
+}
+```
+
+### 10.2 Chatbot API
+**URL:** `/api/chatbot`
+**Method:** POST
+**Body:**
+```json
+{
+  "message": "How to measure blood pressure?",
+  "language": "auto"
+}
+```
+
+### 10.3 MQTT Integration (Optional)
+**Broker:** TCP 1883, WebSocket 9001
+**Topics:**
+- `smb/raspi/{userKey}/telemetry`
+- `smb/raspi/{userKey}/bp`
+- `smb/raspi/{userKey}/config`
+
+---
+
+## 11. SECURITY AND PRIVACY
+
+### 11.1 Data Security
+- Passwords are hashed (bcrypt)
+- HTTPS required (production)
+- Secure session management
+- Database encryption at rest
+
+### 11.2 Access Control
+- **Patient:** View only own data
+- **Doctor:** View assigned patients
+- **Admin:** Full system access
+
+### 11.3 Privacy Compliance
+- Medical data protected
+- No third-party data sharing
+- User right to delete data
+- GDPR/local regulation compliance
+
+---
+
+## 12. SUPPORT AND CONTACT
+
+### 12.1 Using Chatbot
+- Access `/chat` from any account
+- Ask directly in Vietnamese/English
+- Chatbot available 24/7
+
+### 12.2 Report Bugs
+- Describe error in detail
+- Screenshot if possible
+- Browser/device information
+- Send via chat or email
+
+### 12.3 Request New Features
+- Describe desired feature
+- Specific use cases
+- Priority level
+- Send feedback via chatbot
+
+---
+
+## 13. FAQ - FREQUENTLY ASKED QUESTIONS
+
+### Q: I forgot my password, how to reset?
+A: Contact admin to reset password. Self-reset feature coming in next version.
+
+### Q: My BP monitor doesn't have Bluetooth, can I still use it?
+A: Yes! Choose "Manual" mode and enter results manually.
+
+### Q: Are the measurement results accurate?
+A: System only displays results from your BP monitor. Accuracy depends on device and measurement technique.
+
+### Q: Can I delete incorrect measurements?
+A: Currently not supported. Contact doctor/admin for corrections.
+
+### Q: Is there a mobile app?
+A: No dedicated app yet, but website is responsive and works well on mobile browsers.
+
+### Q: Is data backed up?
+A: Yes, database is automatically backed up daily.
+
+### Q: Can I export my data?
+A: Export feature is in development, coming in next version.
+
+---
+
+**NOTE:** This documentation is continuously updated. Latest version always available on SmartBP chatbot.

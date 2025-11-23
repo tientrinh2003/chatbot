@@ -1,0 +1,385 @@
+# FAQ VÀ TROUBLESHOOTING SMARTBP - CHATBOT DATA
+## Câu hỏi thường gặp và giải pháp xử lý lỗi
+
+---
+
+## PHẦN 1: CÂU HỎI VỀ TÀI KHOẢN VÀ ĐĂNG NHẬP
+
+### Q: Làm sao để tạo tài khoản mới?
+A: 
+1. Từ trang chủ, click "Đăng ký"
+2. Điền đầy đủ thông tin: họ tên, email, mật khẩu
+3. Chọn vai trò: Patient (bệnh nhân) hoặc Doctor (bác sĩ)
+4. Click "Đăng ký" và hệ thống sẽ tự động đăng nhập
+5. Tài khoản Admin chỉ được tạo bởi admin hiện tại
+
+### Q: Tôi quên mật khẩu, làm sao để lấy lại?
+A: Hiện tại hệ thống chưa có tính năng reset mật khẩu tự động. Bạn cần liên hệ admin để được reset mật khẩu. Tính năng này sẽ có trong phiên bản tiếp theo.
+
+### Q: Tại sao tôi không đăng nhập được?
+A: Kiểm tra các nguyên nhân sau:
+- Email và mật khẩu có đúng không (phân biệt hoa thường)
+- Tài khoản có bị khóa không (liên hệ admin)
+- Xóa cache browser: Ctrl+Shift+Delete
+- Thử browser khác (Chrome, Firefox, Edge)
+- Kiểm tra kết nối internet
+
+### Q: Phân biệt các loại tài khoản?
+A: 
+- **Patient (Bệnh nhân)**: Đo huyết áp, xem lịch sử của mình, chat với bot
+- **Doctor (Bác sĩ)**: Xem thông tin bệnh nhân, phân tích dữ liệu, thêm ghi chú
+- **Admin**: Quản lý toàn hệ thống, tạo/xóa user, quản lý thiết bị
+
+---
+
+## PHẦN 2: CÂU HỎI VỀ ĐO HUYẾT ÁP
+
+### Q: Cách đo huyết áp chính xác nhất?
+A: Quy trình đo chuẩn:
+1. **Chuẩn bị (5 phút)**: Ngồi thư giãn, không uống cà phê/hút thuốc
+2. **Tư thế**: Ngồi thẳng, chân bằng sàn, tay ngang tim
+3. **Đeo cuff**: Cách khuỷu 2-3cm, độ chặt vừa cho 1 ngón tay
+4. **Trong lúc đo**: Không nói chuyện, không cử động, thở đều
+5. **Đo nhiều lần**: Đo 2-3 lần, nghỉ 1-2 phút giữa các lần
+
+### Q: Chỉ số huyết áp bao nhiêu là bình thường?
+A: Phân loại theo tiêu chuẩn quốc tế:
+- **Bình thường**: Dưới 120/80 mmHg
+- **Cao bình thường**: 120-139/80-89 mmHg
+- **Tăng huyết áp độ 1**: 140-159/90-99 mmHg
+- **Tăng huyết áp độ 2**: 160-179/100-109 mmHg
+- **Tăng huyết áp độ 3**: Trên 180/110 mmHg
+
+### Q: Tại sao mỗi lần đo kết quả khác nhau?
+A: Các yếu tố ảnh hưởng:
+- **Thời gian trong ngày**: Sáng thường cao hơn tối
+- **Hoạt động trước đó**: Vận động, stress, ăn uống
+- **Tư thế đo**: Ngồi, nằm, đứng cho kết quả khác nhau
+- **Thiết bị**: Độ chính xác của máy đo
+- **Kỹ thuật đo**: Đeo cuff, tư thế, môi trường
+
+### Q: Khi nào nên đo huyết áp?
+A: Thời điểm tốt nhất:
+- **Sáng**: 6-10h, trước khi uống thuốc và ăn sáng
+- **Tối**: 18-21h, trước khi ăn tối
+- **Tránh đo khi**: Vừa vận động, stress, đi vệ sinh, hút thuốc, uống cà phê
+- **Tần suất**: Bình thường 1-2 tuần/lần, có bệnh theo chỉ định bác sĩ
+
+---
+
+## PHẦN 3: CÂU HỎI VỀ BLUETOOTH VÀ THIẾT BỊ
+
+### Q: Máy đo Bluetooth không kết nối được?
+A: Troubleshooting từng bước:
+1. **Kiểm tra máy đo**: Bật Bluetooth, chế độ pairing
+2. **Kiểm tra Pi**: Đảm bảo Pi đang chạy và kết nối wifi
+3. **Refresh trang web**: F5 hoặc Ctrl+F5
+4. **Thử manual**: Tạm thời nhập tay nếu cần gấp
+5. **Restart thiết bị**: Tắt bật máy đo và Pi
+6. **Liên hệ admin**: Nếu vẫn không được
+
+### Q: Danh sách các máy đo Bluetooth được hỗ trợ?
+A: Các thương hiệu và model tương thích:
+**Omron:**
+- Omron HEM-7156T
+- Omron HEM-7361T
+- Omron HEM-7600T
+- Omron Connect Series
+
+**A&D Medical:**
+- A&D UA-651BLE
+- A&D UA-1200BLE
+- A&D Connect Series
+
+**Các máy khác:**
+- Máy có chuẩn Bluetooth Low Energy (BLE)
+- Hỗ trợ Health Device Profile (HDP)
+
+### Q: Raspberry Pi là gì và có cần thiết không?
+A: 
+**Raspberry Pi** là máy tính nhỏ đóng vai trò cầu nối:
+- Nhận dữ liệu Bluetooth từ máy đo
+- Chụp ảnh kiểm tra tư thế qua camera
+- Gửi dữ liệu lên website qua WiFi
+
+**Không bắt buộc có Pi** vì:
+- Có thể đo manual (nhập tay)
+- Có chế độ mock simulation để test
+- Pi chỉ cần cho đo tự động và kiểm tra tư thế
+
+### Q: Cách setup Raspberry Pi từ đầu?
+A: Hướng dẫn setup Pi cho admin:
+
+**Bước 1: Cài OS**
+```bash
+# Cài Raspberry Pi OS (Desktop khuyến nghị)
+# Bật SSH, WiFi, Camera trong raspi-config
+```
+
+**Bước 2: Cài Python packages**
+```bash
+pip3 install bleak fastapi uvicorn opencv-python mediapipe
+```
+
+**Bước 3: Copy code và chạy**
+```bash
+# Copy folder raspberrypi/ vào Pi
+cd raspberrypi/
+python3 ble_bridge.py
+```
+
+**Bước 4: Kết nối với web**
+- Vào `/admin/bluetooth` trên website
+- Nhập IP của Pi (ví dụ: 192.168.1.100)
+- Port mặc định: 8000
+
+---
+
+## PHẦN 4: CÂU HỎI VỀ WEBSITE VÀ GIAO DIỆN
+
+### Q: Tại sao tôi không thấy menu mà người khác có?
+A: Do phân quyền theo vai trò:
+- **Patient**: Chỉ thấy Dashboard, Monitoring, History, Chat
+- **Doctor**: Thấy Dashboard, Patients, Chat
+- **Admin**: Thấy tất cả + Users, Bluetooth management
+- Nếu bị sai quyền, liên hệ admin để cập nhật
+
+### Q: Website có chạy trên điện thoại không?
+A: Có! Website được thiết kế responsive:
+- Tương thích mọi kích thước màn hình
+- Tối ưu cho mobile browser
+- Khuyến nghị dùng Chrome, Safari, Firefox mobile
+- Chưa có app riêng nhưng có thể "Add to Home Screen"
+
+### Q: Làm sao xem lịch sử đo của mình?
+A: Với tài khoản Patient:
+1. Vào `/patient/history`
+2. Chọn khoảng thời gian (tuần, tháng, năm)
+3. Click "Lọc" để xem kết quả
+4. Click "Chi tiết" ở mỗi dòng để xem thêm thông tin
+5. Có biểu đồ xu hướng và thống kê
+
+### Q: Bác sĩ có thể xem dữ liệu bệnh nhân không?
+A: Có, bác sĩ có quyền:
+- Xem danh sách tất cả bệnh nhân
+- Xem chi tiết lịch sử đo của từng bệnh nhân  
+- Thêm ghi chú, nhận xét
+- Phân tích xu hướng qua biểu đồ
+- Tạo báo cáo cho bệnh nhân
+
+---
+
+## PHẦN 5: CÂU HỎI VỀ CHATBOT
+
+### Q: Chatbot có thể trả lời những gì?
+A: Chatbot SmartBP có thể:
+**Hướng dẫn sử dụng:**
+- Cách đo huyết áp đúng cách
+- Cách sử dụng website
+- Troubleshooting lỗi cơ bản
+
+**Tư vấn y tế cơ bản:**
+- Giải thích ý nghĩa chỉ số
+- Lời khuyên về lối sống
+- Khi nào nên gặp bác sĩ
+
+**Hỗ trợ kỹ thuật:**
+- Kết nối Bluetooth
+- Sử dụng các tính năng
+- Giải quyết lỗi thường gặp
+
+### Q: Chatbot có hỗ trợ tiếng Anh không?
+A: Có! Chatbot tự động nhận diện ngôn ngữ:
+- **Tiếng Việt**: Trả lời bằng tiếng Việt
+- **English**: Responds in English
+- **Mixed**: Ưu tiên ngôn ngữ chính trong câu
+- Không cần chọn ngôn ngữ trước
+
+### Q: Câu hỏi nào chatbot trả lời tốt?
+A: **Câu hỏi tốt:**
+- "Cách đo huyết áp đúng?"
+- "120/80 có bình thường không?"
+- "How to connect Bluetooth?"
+- "Tại sao máy đo không kết nối?"
+
+**Tránh câu hỏi:**
+- Quá chung chung: "Giúp tôi"
+- Chẩn đoán y khoa phức tạp
+- Thông tin cá nhân của người khác
+- Ngoài phạm vi huyết áp
+
+---
+
+## PHẦN 6: XỬ LÝ LỖI THƯỜNG GẶP
+
+### LỖI: "Cannot connect to database"
+**Triệu chứng**: Trang web báo lỗi database
+**Nguyên nhân**: Mất kết nối database
+**Giải pháp**:
+1. Kiểm tra kết nối internet
+2. Refresh trang (F5)
+3. Đợi 1-2 phút rồi thử lại
+4. Nếu vẫn lỗi, liên hệ admin
+
+### LỖI: Camera không hiển thị
+**Triệu chứng**: Ô camera đen hoặc báo lỗi
+**Nguyên nhân**: Browser chặn camera hoặc Pi offline
+**Giải pháp**:
+1. **Allow camera access** khi browser hỏi
+2. Kiểm tra camera Pi có hoạt động không
+3. Refresh trang và cho phép lại
+4. Thử browser khác
+5. Tạm thời đo mà không cần camera
+
+### LỖI: "Lưu kết quả không thành công"
+**Triệu chứng**: Không lưu được kết quả đo
+**Nguyên nhân**: Mất kết nối hoặc lỗi server
+**Giải pháp**:
+1. Kiểm tra internet connection
+2. Refresh trang và thử lại
+3. Copy kết quả trước khi refresh
+4. Báo admin nếu lỗi liên tục
+
+### LỖI: Bluetooth scan không tìm thấy thiết bị
+**Triệu chứng**: Danh sách Bluetooth trống
+**Nguyên nhân**: Máy đo chưa pairing hoặc Pi offline
+**Giải pháp**:
+1. Bật Bluetooth trên máy đo
+2. Đặt máy đo ở chế độ pairing/connect
+3. Pi phải online và chạy ble_bridge.py
+4. Thử refresh trang
+5. Restart Pi nếu cần
+
+---
+
+## PHẦN 7: CẤU HÌNH VÀ SETTINGS
+
+### Q: Làm sao thay đổi thông tin cá nhân?
+A: **Cho Patient/Doctor:**
+- Hiện tại chưa có giao diện edit profile
+- Liên hệ admin để thay đổi thông tin
+- Tính năng edit profile sẽ có trong version sau
+
+**Cho Admin:**
+- Vào `/admin/users`
+- Click "Sửa" ở dòng user cần thay đổi
+- Cập nhật thông tin và Save
+
+### Q: Có thể thay đổi mật khẩu không?
+A: Tính năng change password đang phát triển. Hiện tại cần admin reset mật khẩu mới.
+
+### Q: Hệ thống có backup dữ liệu không?
+A: Có, hệ thống tự động backup:
+- Database backup hàng ngày
+- Lưu trữ trên cloud storage
+- Retention policy: 30 ngày
+- Admin có thể restore nếu cần
+
+### Q: Dữ liệu có được mã hóa không?
+A: Có, bảo mật đa lớp:
+- **Transit**: HTTPS cho mọi kết nối
+- **Storage**: Database encryption at rest
+- **Password**: Hashed bằng bcrypt
+- **Session**: Secure token-based authentication
+
+---
+
+## PHẦN 8: TÍNH NĂNG NÂNG CAO
+
+### Q: MQTT là gì và có cần thiết không?
+A: **MQTT** là giao thức messaging realtime:
+- Cho phép giao tiếp 2 chiều với Pi
+- Cập nhật trạng thái ngay lập tức
+- **Không bắt buộc** - hệ thống chạy được với HTTP/SSE
+- Chỉ cần cho deployment lớn
+
+### Q: Webhook hoạt động như thế nào?
+A: **Webhook** để Pi gửi dữ liệu trực tiếp:
+```
+POST /api/measurements/webhook
+Authorization: Bearer [WEBHOOK_SECRET]
+{
+  "userKey": "patient@smartbp.local",
+  "sys": 130, "dia": 84, "pulse": 72,
+  "telemetry": {"posture_ok": true, "mouth_open": false}
+}
+```
+
+### Q: Mock Simulation để làm gì?
+A: **Mock Simulation** cho phép test toàn hệ thống:
+- Không cần Pi thật hoặc máy đo
+- Mô phỏng các trạng thái: tư thế, miệng, nói chuyện
+- Tạo kết quả đo giả để test
+- Dùng cho demo, training, development
+
+### Q: Có thể tích hợp với hệ thống khác không?
+A: Có, qua các API:
+- **REST API** cho CRUD operations
+- **Webhook** cho realtime data
+- **MQTT** cho messaging
+- **Database export** cho báo cáo
+- Liên hệ admin để được hỗ trợ tích hợp
+
+---
+
+## PHẦN 9: BẢO TRÌ VÀ CẬP NHẬT
+
+### Q: Hệ thống có cập nhật tự động không?
+A: **Cập nhật manual** bởi admin:
+- Admin sẽ thông báo trước khi maintenance
+- Downtime thường dưới 15 phút
+- Backup tự động trước khi update
+- Rollback nếu có vấn đề
+
+### Q: Làm sao biết có version mới?
+A: Theo dõi cập nhật qua:
+- Thông báo trên website
+- Chat với chatbot: "có gì mới?"
+- Admin sẽ email thông báo tính năng mới
+- Check changelog trong system
+
+### Q: Có thể request tính năng mới không?
+A: Có! Gửi feedback qua:
+- Chat với chatbot
+- Email admin
+- Mô tả chi tiết use case
+- Admin sẽ đánh giá và phản hồi
+
+---
+
+## PHẦN 10: LIÊN HỆ VÀ HỖ TRỢ
+
+### Q: Khi nào cần liên hệ admin?
+A: **Liên hệ admin khi:**
+- Tạo/xóa tài khoản
+- Reset mật khẩu
+- Lỗi hệ thống nghiêm trọng
+- Cần tích hợp với hệ thống khác
+- Request tính năng mới
+
+### Q: Khi nào cần liên hệ bác sĩ?
+A: **Liên hệ bác sĩ khi:**
+- Chỉ số huyết áp bất thường liên tục
+- Có triệu chứng: đau đầu, choáng váng
+- Cần tư vấn về thuốc
+- Thay đổi lối sống
+- Lập kế hoạch điều trị
+
+### Q: Hỗ trợ 24/7?
+A: **Hỗ trợ tự động:**
+- Chatbot 24/7 cho câu hỏi cơ bản
+- Website hoạt động 24/7
+- Database backup tự động
+
+**Hỗ trợ manual:**
+- Admin: giờ hành chính
+- Bác sĩ: theo lịch hẹn
+- Emergency: liên hệ số điện thoại khẩn cấp
+
+---
+
+**LƯU Ý QUAN TRỌNG**: 
+1. Website SmartBP chỉ hỗ trợ theo dõi huyết áp, không thay thế tư vấn y tế trực tiếp
+2. Luôn tham khảo ý kiến bác sĩ cho chẩn đoán và điều trị chính thức
+3. Trong trường hợp khẩn cấp, hãy gọi 115 hoặc đến cơ sở y tế gần nhất
+4. Định kỳ kiểm tra và bảo dưỡng máy đo huyết áp để đảm bảo độ chính xác
