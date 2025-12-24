@@ -19,32 +19,21 @@ from typing import Optional, List, Dict, Any, Literal
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
+from langchain_core.prompts import PromptTemplate
 
-# Try to import Ollama components (optional)
-try:
-    from langchain_ollama import OllamaEmbeddings, ChatOllama
-    import ollama
-    OLLAMA_AVAILABLE = True
-except ImportError:
-    OLLAMA_AVAILABLE = False
+# Suppress noisy pypdf warnings
+logging.getLogger("pypdf._reader").setLevel(logging.ERROR)
 
-# Try to import OpenAI components as fallback
-try:
-    from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-    OPENAI_AVAILABLE = True
-except ImportError:
-    OPENAI_AVAILABLE = False
+# Note: Memory and chains moved in LangChain 1.x
+# We'll use simpler LLM + retriever flow instead of ConversationalRetrievalChain
 
-# Try to import HuggingFace/SentenceTransformers (best for Vietnamese)
-try:
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    import sentence_transformers
-    SENTENCE_TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    SENTENCE_TRANSFORMERS_AVAILABLE = False
+# Import Ollama components (required)
+from langchain_ollama import OllamaEmbeddings, ChatOllama
+import ollama
+
+# Import HuggingFace embeddings for RAG
+from langchain_huggingface import HuggingFaceEmbeddings
+import sentence_transformers
 from langdetect import detect, LangDetectException
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
@@ -64,23 +53,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize vectorstore on startup
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the RAG system on application startup"""
+# Global variables for RAG components
+vectorstore = None
+conversation_chains = {}
+embeddings_model = None  # Cache embeddings to reuse
+
+# Lifespan context manager (FastAPI 0.93+)
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan handler for startup and shutdown"""
+    # Startup
     logging.info("🚀 Starting SmartBP Chatbot API...")
     logging.info("📚 Initializing knowledge base...")
+    
+    # Delete old incompatible vectorstore if exists
+    old_db_path = "./db"
+    if os.path.exists(old_db_path) and os.path.isdir(old_db_path):
+        try:
+            # Check if it's the old 768-dim vectorstore
+            chroma_meta = os.path.join(old_db_path, "chroma.sqlite3")
+            if os.path.exists(chroma_meta):
+                logging.info(f"🗑️  Removing old incompatible vectorstore: {old_db_path}")
+                shutil.rmtree(old_db_path)
+        except Exception as e:
+            logging.warning(f"Could not remove old db: {e}")
+    
+    # Initialize once
     initialize_vectorstore()
     logging.info("✅ Startup completed")
+    
+    yield  # App runs here
+    
+    # Shutdown
+    logging.info("🛑 Shutting down...")
+    conversation_chains.clear()
+    
+app = FastAPI(
+    title="SmartBP Chatbot API", 
+    version="2.0.0",
+    lifespan=lifespan
+)
 
-# Configuration
-logging.basicConfig(level=logging.INFO)
-warnings.filterwarnings("ignore")
+# Remove old on_event decorators
+# @app.on_event("startup")  # DELETED
+# @app.on_event("shutdown")  # DELETED
 
 DATA_PATH = os.getenv("DATA_DIR", "./data")
 MODEL_NAME = os.getenv("LLM_MODEL", "llama3.1:8b")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
-DB_PATH = os.getenv("PERSIST_DIR", "./db")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+# Use consistent 384-dim embeddings to match vectorstore
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+DB_PATH = os.getenv("PERSIST_DIR", "./db/chroma_db_384")
+EMBEDDING_DIM = 384  # MiniLM produces 384-dim embeddings
 
 # Fallback configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -237,8 +263,13 @@ def load_all_documents():
     return documents
 
 def initialize_vectorstore():
-    """Initialize vectorstore with all documents"""
-    global vectorstore
+    """Initialize vectorstore with all documents - only called once at startup"""
+    global vectorstore, embeddings_model
+    
+    # Early return if already initialized
+    if vectorstore is not None:
+        logging.info("✅ Vectorstore already initialized, skipping...")
+        return vectorstore
     
     try:
         # Load all documents
@@ -258,44 +289,51 @@ def initialize_vectorstore():
         splits = text_splitter.split_documents(documents)
         logging.info(f"📄 Document chunks created: {len(splits)}")
         
-        # Initialize embeddings
-        if SENTENCE_TRANSFORMERS_AVAILABLE:
-            embeddings = HuggingFaceEmbeddings(
-                model_name="keepitreal/vietnamese-sbert",
-                model_kwargs={'device': 'cpu'}
-            )
-            logging.info("🔗 Using HuggingFace Vietnamese embeddings")
-        elif OLLAMA_AVAILABLE:
-            embeddings = OllamaEmbeddings(model="nomic-embed-text")
-            logging.info("🔗 Using Ollama embeddings")
-        else:
-            embeddings = MockEmbeddings()
-            logging.warning("⚠️ Using mock embeddings - limited functionality")
-        
-        # Create vectorstore
-        vectorstore = Chroma.from_documents(
-            documents=splits,
-            embedding=embeddings,
-            persist_directory="./db"
+        # Initialize embeddings - use 384-dim MiniLM for consistency
+        embeddings_model = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            model_kwargs={'device': 'cpu'}
         )
+        # Verify dimension
+        test_embed = embeddings_model.embed_query("test")
+        actual_dim = len(test_embed)
+        logging.info(f"✅ Using HuggingFace embeddings - Dimension: {actual_dim}")
         
-        logging.info("✅ Vectorstore initialized successfully")
+        if actual_dim != EMBEDDING_DIM:
+            logging.warning(f"⚠️ Embedding dimension mismatch: expected {EMBEDDING_DIM}, got {actual_dim}")
+        
+        # Create or load vectorstore
+        try:
+            vectorstore = Chroma.from_documents(
+                documents=splits,
+                embedding=embeddings_model,
+                persist_directory=DB_PATH
+            )
+            logging.info(f"✅ Vectorstore initialized successfully at {DB_PATH}")
+        except Exception as e:
+            logging.error(f"❌ Vectorstore creation failed: {e}")
+            # Try with fallback
+            logging.info("💡 Attempting fallback...")
+            vectorstore = None
+        
         return vectorstore
         
     except Exception as e:
         logging.error(f"❌ Failed to initialize vectorstore: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 class MockEmbeddings:
     """Mock embeddings for when no embedding service is available"""
     
     def embed_documents(self, texts):
-        """Return mock embeddings for documents"""
-        return [[0.1] * 384 for _ in texts]  # Mock 384-dimensional embeddings
+        """Return mock embeddings for documents - 384-dim to match MiniLM"""
+        return [[0.1] * EMBEDDING_DIM for _ in texts]
     
     def embed_query(self, text):
-        """Return mock embedding for query"""
-        return [0.1] * 384
+        """Return mock embedding for query - 384-dim to match MiniLM"""
+        return [0.1] * EMBEDDING_DIM
 
 def initialize_rag_system():
     """Initialize the RAG system with medical documents"""
@@ -561,35 +599,18 @@ def generate_mock_response(message: str, role: str, language: str = "vi") -> str
             return "Hello! I'm the SmartBP AI assistant. The system is currently in basic mode. You can ask about blood pressure, diet, or exercise. I'll do my best to help you."
 
 def initialize_llm():
-    """Initialize LLM with fallback options"""
+    """Initialize Ollama LLM"""
     try:
-        # Try Ollama first
-        if OLLAMA_AVAILABLE:
-            try:
-                logging.info("🔵 Testing Ollama connection...")
-                ollama_client = ollama.Client()
-                ollama_client.list()  # Test connection
-                logging.info("🔵 Creating ChatOllama instance...")
-                llm = ChatOllama(model=MODEL_NAME, temperature=0.7)
-                logging.info(f"✅ Using Ollama LLM: {MODEL_NAME}")
-                return llm
-            except Exception as e:
-                logging.error(f"❌ Ollama LLM failed: {e}")
-                # Silently fallback to next option
-                pass        # Try OpenAI fallback
-        if OPENAI_AVAILABLE and OPENAI_API_KEY:
-            return ChatOpenAI(
-                model="gpt-3.5-turbo",
-                temperature=0.7,
-                openai_api_key=OPENAI_API_KEY
-            )
-        
-        # If all else fails, return None (will trigger mock responses)
-        logging.warning("⚠️ No LLM available - using mock responses")
-        return None
-        
+        logging.info("🔵 Testing Ollama connection...")
+        ollama_client = ollama.Client()
+        ollama_client.list()  # Test connection
+        logging.info("🔵 Creating ChatOllama instance...")
+        llm = ChatOllama(model=MODEL_NAME, temperature=0.7, base_url=OLLAMA_BASE_URL)
+        logging.info(f"✅ Using Ollama LLM: {MODEL_NAME}")
+        return llm
     except Exception as e:
-        logging.error(f"❌ LLM initialization failed: {e}")
+        logging.error(f"❌ Ollama LLM failed: {e}")
+        logging.warning("⚠️ Make sure Ollama is running: ollama serve")
         return None
 
 def analyze_bp_risk(measurements: List[MeasurementData]) -> str:
@@ -711,37 +732,52 @@ def create_conversation_chain(role: str, context: ChatContext, language: str = "
         logging.warning("⚠️ No LLM or vectorstore available - conversation chain disabled")
         return None
     
-    # Create conversation chain
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
-    )
+    # Create a simple retriever + LLM chain (replacing deprecated ConversationalRetrievalChain)
+    # Return a dict-like object that mimics the chain interface
+    class SimpleRAGChain:
+        def __init__(self, llm, retriever, prompt):
+            self.llm = llm
+            self.retriever = retriever
+            self.prompt = prompt
+            self.chat_history = []
+        
+        def invoke(self, inputs):
+            """Simplified chain invocation"""
+            try:
+                question = inputs.get("question", "")
+                chat_hist = inputs.get("chat_history", "")
+                
+                # Retrieve context
+                docs = self.retriever.invoke(question)
+                doc_text = "\n".join([doc.page_content for doc in docs])
+                
+                # Format prompt with retrieved docs and chat history
+                formatted_prompt = self.prompt.format(
+                    chat_history=chat_hist,
+                    context=doc_text,
+                    question=question
+                )
+                
+                # Get LLM response
+                response = self.llm.invoke(formatted_prompt)
+                if hasattr(response, 'content'):
+                    return {"text": response.content}
+                return {"text": str(response)}
+            except Exception as e:
+                logging.error(f"Chain invocation error: {e}")
+                return {"text": ""}
     
-    chain = ConversationalRetrievalChain.from_llm(
+    chain = SimpleRAGChain(
         llm=llm,
         retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
-        memory=memory,
-        combine_docs_chain_kwargs={"prompt": prompt}
+        prompt=prompt
     )
     
     return chain
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the application"""
-    logging.info("🚀 Starting SmartBP Chatbot API...")
-    
-    if not os.path.exists(DATA_PATH):
-        logging.error(f"❌ Data directory not found: {DATA_PATH}")
-        return
-    
-    success = initialize_rag_system()
-    if success:
-        logging.info("✅ SmartBP Chatbot API is ready!")
-    else:
-        logging.error("❌ Failed to initialize RAG system")
-
-@app.post("/chat", response_model=EnhancedChatResponse)
+# No longer using @app.on_event - using lifespan context manager instead
+# Vectorstore is now initialized in the lifespan handler
+@app.post("/chat")
 async def enhanced_chat_endpoint(request: EnhancedChatRequest):
     """Enhanced chat endpoint with full SBM integration and multilingual support"""
     try:
@@ -803,8 +839,8 @@ async def enhanced_chat_endpoint(request: EnhancedChatRequest):
         else:
             try:
                 logging.info("🔵 Executing chain query...")
-                result = chain({"question": request.message})
-                response_text = result["answer"]
+                result = chain.invoke({"question": request.message, "chat_history": ""})
+                response_text = result["text"]
                 logging.info("🔵 Chain execution successful")
             except Exception as e:
                 logging.error(f"❌ Chain execution failed: {e}")
@@ -890,3 +926,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 5001))  # Use PORT from .env or default to 5001 to avoid conflicts
     uvicorn.run(app, host="0.0.0.0", port=port)
+

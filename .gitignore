@@ -82,3 +82,13 @@ config/secrets.yaml
 data/*.pdf
 data/documents/
 uploads/
+
+# Added exclusions for GitHub
+.github/
+.gitlab/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets/
